@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<!-- Авторизация -->
+	<string name="auth_welcome">Добро пожаловать</string>
+	<string name="auth_phone_number">Номер Вашего телефона</string>
+	<string name="auth_password">Ваш пароль</string>
+	<string name="auth_login">Войти</string>
+	<string name="auth_error_login_info">Неверные данные. Пожалуйста, убедитесь, что телефон или email и пароль введены правильно и повторите попытку.</string>
+	<string name="auth_signup">Зарегистрироваться</string>
+	<string name="auth_welcome_info">Вы сможете бесплатно обмениваться мгновенными сообщениями с друзьями</string>
+	
+	
+	<!-- Регистрация -->
+	<string name="reg_new_account">Регистрация</string>
+	<string name="reg_cancel">Отмена</string>
+	<string name="reg_phone_number">Номер Вашего телефона</string>
+	<string name="reg_name">Ваше имя</string>
+	<string name="reg_password">Пароль</string>
+	<string name="reg_signup">Зарегистрироваться</string>
+	
+	
+	<!-- Список диалогов -->
+	<string name="ld_messages">Сообщения</string>
+	<string name="ld_search">Поиск</string>
+	
+	
+	<!-- Просмотр диалога -->
+	<string name="vd_loading_messages">Сообщения загружаются..</string>
+	<string name="vd_not_messages">Сообщений пока нет</string>
+	<string name="vd_back">Назад</string>
+	<string name="vd_online">Онлайн</string>
+	
+	<string name="vd_write_message">Написать сообщение</string>
+	<string name="vd_send_message">Отпр.</string>
+	<string name="vd_user_was_begin"> был в сети </string>
+	<string name="vd_user_was_end"> назад</string>
+	
+	<string name="vd_uploading_att">Вложения загружаются..</string>
+	<string name="vd_remove_att">Удалить вложение</string>
+	<string name="vd_error_loading">Ошибка загрузки</string>
+	<string name="vd_message_not_send">Сообщение не удалось отправить.</string>
+	<string name="vd_try_again">Повторить попытку</string>
+	
+	<string name="vd_forward">Переслать</string>
+	<string name="vd_delete">Удалить</string>
+	
+	<string name="vd_take_photo">Сделать снимок с камеры</string>
+	<string name="vd_choose_exist_photo">Выбрать фото из галереи</string>
+	<string name="vd_share_location">Прикрепить местоположение</string>
+	
+	<string name="vd_members"> участников беседы</string>
+	<string name="vd_change_chat">Изменить название беседы</string>
+	<string name="vd_add_person">Добавить собеседника</string>
+	
+	<string name="vd_user_typing"> набирает сообщение..</string>
+	
+	<string name="vd_photo">Фотография</string>
+	<string name="vd_map">Карта</string>
+	<string name="vd_video">Видеозапись</string>
+	<string name="vd_audio">Аудиозапись</string>
+	<string name="vd_document">Документ</string>
+	<string name="vd_forwarded_message">Пересланное сообщение</string>
+	
+	
+	<!-- Контакты -->	
+	<string name="c_friends">Друзья</string>
+	<string name="c_online">Онлайн</string>
+	<string name="c_contacts">Контакты</string>
+	
+	<string name="c_sync_contacts">Синхронизировать контакты</string>
+	<string name="c_sync_info">Вы можете синхронизировать список друзей VK с записной книжкой Вашего телефона</string>
+	
+	<string name="c_call">Позвонить на </string>
+	<string name="c_send_message">Отправить сообщение</string>
+	<string name="c_send_invitation">Отправить приглашение</string>
+	<string name="c_invitation_info">Пользователь ещё не зарегистрирован. Вы можете отправить ему приглашение</string>
+	
+	
+	<!-- Поиск друзей -->	
+	<string name="sf_requests">Заявки</string>
+	<string name="sf_friend_requests">Заявки в друзья</string>
+	<string name="sf_possible_friends">Возможные друзья</string>
+	<string name="sf_search_friends_info">Вы можете искать своих друзей и знакомых среди всех пользователей</string>
+	<string name="sf_add_friend">Добавить в друзья</string>
+	<string name="sf_decline_friend">Отклонить заявку</string>
+	<string name="sf_delete_friend">Удалить из друзей</string>
+	
+	
+	<!-- Настройки -->	
+	<string name="sett">Настройки</string>
+	<string name="sett_change_photo">Изменить фотографию</string>
+	<string name="sett_notifications">Оповещения в приложении</string>
+	<string name="sett_vibrate">Вибрация</string>
+	<string name="sett_sound">Звук</string>
+	<string name="sett_banner">Всплывающая строка</string>
+	<string name="sett_push_notifications">Push-оповещения</string>
+	<string name="sett_disable_not_for_period">Отключить звуковые уведомления на </string>
+	
+	
+	
+	
+	
+	
+    <string name="hello">Hello World, VK_ChatActivity!</string>
+    <string name="app_name">VK_Chat</string>
+    <color name="login_button">#ffffff</color>
+
+</resources>

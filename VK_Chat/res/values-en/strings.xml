@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<!-- Authorization -->
+	<string name="auth_welcome">Welcome</string>
+	<string name="auth_phone_number">Your phone number</string>
+	<string name="auth_password">Your password</string>
+	<string name="auth_login">Log in</string>
+	<string name="auth_error_login_info">Authorization error. Please make sure that you\'ve entered the correct phone or email and password and try again.</string>
+	<string name="auth_signup">Sign up</string>
+	<string name="auth_welcome_info"> For fast, free and convenient messaging with friends and contacts</string>
+	
+	
+	<!-- Registration -->
+	<string name="reg_new_account">New account</string>
+	<string name="reg_cancel">Cancel</string>
+	<string name="reg_phone_number">Your phone number</string>
+	<string name="reg_name">Your name</string>
+	<string name="reg_password">Password</string>
+	<string name="reg_signup">Sign up</string>
+	
+	
+	<!-- List of dialogs -->
+	<string name="ld_messages">Messages</string>
+	<string name="ld_search">Search</string>
+	
+	
+	<!-- To view dialogs -->
+	<string name="vd_loading_messages">Loading messages..</string>
+	<string name="vd_not_messages">No messages yet</string>
+	<string name="vd_back">Back</string>
+	<string name="vd_online">Online</string>
+	
+	<string name="vd_write_message">Write a message</string>
+	<string name="vd_send_message">Send</string>
+	<string name="vd_user_was_begin"> was last seen </string> <!-- {user} was last seen {time} ago -->
+	<string name="vd_user_was_end"> ago</string>
+	
+	<string name="vd_uploading_att">Uploading attachments..</string>
+	<string name="vd_remove_att">Remove attachment</string>
+	<string name="vd_error_loading">Error uploading</string>
+	<string name="vd_message_not_send">Message was not sent.</string>
+	<string name="vd_try_again">Try again</string>
+	
+	<string name="vd_forward">Forward</string>
+	<string name="vd_delete">Delete</string>
+	
+	<string name="vd_take_photo">Take photo</string>
+	<string name="vd_choose_exist_photo">Choose existing photo</string>
+	<string name="vd_share_location">Share location</string>
+	
+	<string name="vd_members"> members</string> <!-- {num} members -->
+	<string name="vd_change_chat">Change chat</string>
+	<string name="vd_add_person">Add person</string>
+	
+	<string name="vd_user_typing"> is typing..</string>
+	
+	<string name="vd_photo">Photo</string>
+	<string name="vd_map">Map</string>
+	<string name="vd_video">Video</string>
+	<string name="vd_audio">Audio</string>
+	<string name="vd_document">Document</string>
+	<string name="vd_forwarded_message">Forwarded message</string>
+	
+	
+	<!-- Contacts -->	
+	<string name="c_friends">Friends</string>
+	<string name="c_online">Online</string>
+	<string name="c_contacts">Contacts</string>
+	
+	<string name="c_sync_contacts">Sync contacts</string>
+	<string name="c_sync_info">Sync your phone contacts with your VK friends list</string>
+	
+	<string name="c_call">Call </string> <!--  Call {phone}  -->
+	<string name="c_send_message">Send a message</string>
+	<string name="c_send_invitation">Send invitation</string>
+	<string name="c_invitation_info">User is not registred yet. You can send an invitation.</string>
+	
+	
+	<!-- Find friends -->	
+	<string name="sf_requests">Requests</string>
+	<string name="sf_friend_requests">Friend requests</string>
+	<string name="sf_possible_friends">People you may know</string>
+	<string name="sf_search_friends_info">Search for your friends and contacts among all registred users</string>
+	<string name="sf_add_friend">Add friend</string>
+	<string name="sf_decline_friend">Decline request</string>
+	<string name="sf_delete_friend">Delete friend</string>
+	
+	
+	<!-- Settings -->	
+	<string name="sett">Settings</string>
+	<string name="sett_change_photo">Change photo</string>
+	<string name="sett_notifications">In-app notifications</string>
+	<string name="sett_vibrate">Vibrate</string>
+	<string name="sett_sound">Sound</string>
+	<string name="sett_banner">Banner</string>
+	<string name="sett_push_notifications">Push notifications</string>
+	<string name="sett_disable_not_for_period">Disable notification sound for the next </string> <!-- Disable notification sound for the next {time}  -->
+</resources>
