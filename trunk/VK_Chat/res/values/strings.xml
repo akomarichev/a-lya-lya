@@ -15,6 +15,7 @@
 	<string name="reg_cancel">Отмена</string>
 	<string name="reg_phone_number">Номер Вашего телефона</string>
 	<string name="reg_name">Ваше имя</string>
+	<string name="reg_sername">Ваша фамилия</string>
 	<string name="reg_password">Пароль</string>
 	<string name="reg_signup">Зарегистрироваться</string>
 	

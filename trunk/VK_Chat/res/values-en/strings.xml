@@ -15,6 +15,7 @@
 	<string name="reg_cancel">Cancel</string>
 	<string name="reg_phone_number">Your phone number</string>
 	<string name="reg_name">Your name</string>
+	<string name="reg_sername">Your sername</string>
 	<string name="reg_password">Password</string>
 	<string name="reg_signup">Sign up</string>
 	
