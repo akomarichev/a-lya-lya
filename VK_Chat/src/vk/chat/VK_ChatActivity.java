@@ -45,7 +45,8 @@ public class VK_ChatActivity extends Activity {
     private OnClickListener loginClick=new OnClickListener(){
         @Override
         public void onClick(View v) {
-        	startActivity(new Intent(VK_ChatActivity.this, LoginActivity.class));
+        	//startActivity(new Intent(VK_ChatActivity.this, LoginActivity.class));
+        	startActivity(new Intent(VK_ChatActivity.this, SignupActivity.class));
         }
     };
     
@@ -63,7 +64,8 @@ public class VK_ChatActivity extends Activity {
          * 
         intent.setClass(this, LoginActivity.class);
         startActivityForResult(intent, REQUEST_LOGIN);*/
-    	startActivity(new Intent(VK_ChatActivity.this, LoginActivity.class));
+    	//startActivity(new Intent(VK_ChatActivity.this, LoginActivity.class));
+    	startActivity(new Intent(VK_ChatActivity.this, SignupActivity.class));
     }
     
     /*@Override
