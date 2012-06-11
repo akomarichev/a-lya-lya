@@ -47,7 +47,7 @@
                 android:layout_below="@+id/signup_top"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="22dp"
-                android:inputType="phone" android:hint="@string/auth_phone_number">
+                android:inputType="phone" android:hint="@string/auth_phone_number" android:background="@drawable/singup_input_selector">
 
                 <requestFocus />
             </EditText>
@@ -61,7 +61,7 @@
                 android:layout_below="@+id/editText1"
                 android:ems="10"
                 android:hint="@string/reg_name"
-                android:inputType="textPersonName" />
+                android:inputType="textPersonName" android:background="@drawable/singup_input_selector"/>
 
             <EditText
                 android:id="@+id/editText3"
@@ -71,7 +71,7 @@
                 android:layout_alignRight="@+id/editText2"
                 android:layout_below="@+id/editText2"
                 android:ems="10"
-                android:inputType="textPersonName" android:hint="@string/reg_sername"/>
+                android:inputType="textPersonName" android:hint="@string/reg_sername" android:background="@drawable/singup_input_selector"/>
 
             <Button
                 android:id="@+id/button1"
