@@ -24,6 +24,9 @@
         <activity android:name=".ConversationsActivity"></activity>
         <activity android:name=".SearchActivity"></activity>
         <activity android:name=".SettingsActivity"></activity>
+        <activity android:name=".FriendsActivity"></activity>
+        <activity android:name=".OnlineFriendsActivity"></activity>
+        <activity android:name=".HandsetContactsActivity"></activity>
     </application>
 
 </manifest>
