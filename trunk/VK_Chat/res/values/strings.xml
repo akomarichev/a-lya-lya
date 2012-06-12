@@ -105,5 +105,6 @@
     <string name="hello">Hello World, VK_ChatActivity!</string>
     <string name="app_name">VK_Chat</string>
     <color name="login_button">#ffffff</color>
+    <color name="white_color">#ffffff</color>
 
 </resources>

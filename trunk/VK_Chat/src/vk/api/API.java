@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.http.Header;
@@ -11,34 +13,46 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.text.Html;
+import android.util.Log;
 
 public class API {
 	//private String url2 = "https://oauth.vk.com/token?grant_type=password&client_id=2985083&client_secret=powUs3vuKhIYNrgsLif1&username=calmnessart@mail.ru&password=nbvjynb";
-	private String url = "https://oauth.vk.com/token";
+	private String url = "https://api.vk.com/method/";
+	private String access_token="3c8616a539ec404439ec4044c439c1cc3f339ec39eb7cbb3dc0143b2f81d413";
+	private String user_id = "90855137";
 	
 	
 	private String getSignedUrl(Params params) {
         String args = params.getParamsString();
         
         //add access_token
-        //if(args.length()!=0)
-        //    args+="&";
-        //args+="access_token="+access_token;
+        if(args.length()!=0)
+            args+="&";
+        args+="access_token="+access_token;
         
         return url+params.method_name+"?"+args;
     }
     
 
-	public String SendHttpPost() {
+	public JSONObject SendHttpPost(Params params) {
 		try {
-			Params params = new Params("");
+			/*Params params = new Params("");
+			params.put("scope", Auth.getSettings());
 	        params.put("grant_type", "password");
 			params.put("client_id", "2985083");
 			params.put("client_secret", "powUs3vuKhIYNrgsLif1");
 			params.put("username", "calmnessart@mail.ru");
-			params.put("password", "nbvjynb");
+			params.put("password", "nbvjynb");*/
+			
 			
 			String URL = getSignedUrl(params);
+			
+			Log.d("Artem", URL);
 			
 			DefaultHttpClient httpclient = new DefaultHttpClient();
 			HttpGet httpGet = new HttpGet(URL);
@@ -62,15 +76,15 @@ public class API {
 				// convert content stream to a String
 				String resultString= convertStreamToString(instream);
 				instream.close();
-				resultString = resultString.substring(1,resultString.length()-1); // remove wrapping "[" and "]"
+				//resultString = resultString.substring(1,resultString.length()-1); // remove wrapping "[" and "]"
 
-				return resultString;
+				Log.d("Artem",resultString);
 				// Transform the String into a JSONObject
-				//JSONObject jsonObjRecv = new JSONObject(resultString);
+				JSONObject jsonObjRecv = new JSONObject(resultString);
 				// Raw DEBUG output of our received JSON object:
 				//Log.i(TAG,"<JSONObject>\n"+jsonObjRecv.toString()+"\n</JSONObject>");
 
-				//return jsonObjRecv;
+				return jsonObjRecv;
 			} 
 
 		}
@@ -78,7 +92,7 @@ public class API {
 		{
 			e.printStackTrace();
 		}
-		return "";
+		return null;
 	}
 
 
@@ -102,4 +116,31 @@ public class API {
 		}
 		return sb.toString();
 	}	
+	
+	public static String unescape(String text){
+        return Html.fromHtml(text).toString();
+    }
+	
+	public ArrayList<User> getFriends() throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("friends.get");
+        String fields="first_name,last_name,photo_rec,online";
+        params.put("fields",fields);
+        params.put("uid",user_id);
+        params.put("order","hints");
+        //params.put("scope", Auth.getSettings());
+        
+        JSONObject root = SendHttpPost(params);
+        ArrayList<User> users=new ArrayList<User>();
+        JSONArray array=root.optJSONArray("response");
+        //if there are no friends "response" will not be array
+        if(array==null)
+            return users;
+        int category_count=array.length();
+        for(int i=0; i<category_count; ++i){
+            JSONObject o = (JSONObject)array.get(i);
+            User u = User.parse(o);
+            users.add(u);
+        }
+        return users;
+    }
 }
