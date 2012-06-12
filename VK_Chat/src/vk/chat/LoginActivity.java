@@ -36,7 +36,7 @@ public class LoginActivity extends Activity {
 		Log.d("Artem", "1");
 		api = new API();
 		String response = "";
-		response = api.SendHttpPost();
+		//response = api.SendHttpPost();
 		Log.d("Artem", response);
 		
 		setupUI();
