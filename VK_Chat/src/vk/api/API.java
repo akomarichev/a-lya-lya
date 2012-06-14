@@ -78,7 +78,7 @@ public class API {
 				instream.close();
 				//resultString = resultString.substring(1,resultString.length()-1); // remove wrapping "[" and "]"
 
-				Log.d("Artem",resultString);
+				Log.d("API",resultString);
 				// Transform the String into a JSONObject
 				JSONObject jsonObjRecv = new JSONObject(resultString);
 				// Raw DEBUG output of our received JSON object:
@@ -123,7 +123,7 @@ public class API {
 	
 	public ArrayList<User> getFriends() throws MalformedURLException, IOException, JSONException{
         Params params = new Params("friends.get");
-        String fields="first_name,last_name,photo_rec,online";
+        String fields="first_name,last_name,photo_rec,online,contacts";
         params.put("fields",fields);
         params.put("uid",user_id);
         params.put("order","hints");
@@ -142,5 +142,32 @@ public class API {
             users.add(u);
         }
         return users;
+    }
+	
+	
+    public ArrayList<Message> getMessagesDialogs(long time_offset, int count) throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("messages.getDialogs");
+        if (time_offset!=0)
+            params.put("time_offset", time_offset);
+        if (count != 0)
+            params.put("count", count);
+        params.put("preview_length","0");
+        JSONObject root = SendHttpPost(params);
+        JSONArray array = root.optJSONArray("response");
+        ArrayList<Message> messages = parseMessages(array, false, 0, false ,0);
+        return messages;
+    }
+    
+    private ArrayList<Message> parseMessages(JSONArray array, boolean from_history, long history_uid, boolean from_chat, long me) throws JSONException {
+        ArrayList<Message> messages = new ArrayList<Message>();
+        if (array != null) {
+            int category_count = array.length();
+            for(int i = 1; i < category_count; ++i) {
+                JSONObject o = (JSONObject)array.get(i);
+                Message m = Message.parse(o, from_history, history_uid, from_chat, me);
+                messages.add(m);
+            }
+        }
+        return messages;
     }
 }

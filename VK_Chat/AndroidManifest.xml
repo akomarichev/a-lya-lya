@@ -11,7 +11,8 @@
     <application>
         <activity
             android:name=".VK_ChatActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name" 
+            android:windowSoftInputMode="adjustPan|adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -24,9 +25,11 @@
         <activity android:name=".ConversationsActivity"></activity>
         <activity android:name=".SearchActivity"></activity>
         <activity android:name=".SettingsActivity"></activity>
-        <activity android:name=".FriendsActivity"></activity>
+        <activity android:name=".FriendsActivity"
+            android:windowSoftInputMode="adjustPan|adjustResize"></activity>
         <activity android:name=".OnlineFriendsActivity"></activity>
         <activity android:name=".HandsetContactsActivity"></activity>
+        <activity android:name=".DialogActivity"></activity>
     </application>
 
 </manifest>

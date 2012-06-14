@@ -1,4 +1,4 @@
-package vk.api;
+package vk.adapters;
 
 import java.io.InputStream;
 import java.lang.ref.WeakReference;

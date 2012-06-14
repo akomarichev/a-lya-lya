@@ -1,9 +1,12 @@
-package vk.chat;
+package vk.adapters;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import vk.api.User;
+import vk.chat.R;
+import vk.chat.R.id;
+import vk.chat.R.layout;
 
 import android.content.Context;
 import android.graphics.Bitmap;
