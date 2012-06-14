@@ -9,6 +9,7 @@ public class User {
     public String last_name;
     public Boolean online;
     public String photo_rec; 
+    public String mobile_phone;
     
     public static User parse(JSONObject o) throws JSONException {
         User u = new User();
@@ -21,6 +22,8 @@ public class User {
             u.online = o.optInt("online")==1;
         if(!o.isNull("photo_rec"))
             u.photo_rec = o.optString("photo_rec");
+        if(!o.isNull("mobile_phone"))
+            u.mobile_phone = o.optString("mobile_phone");
         return u;
     }
 }
