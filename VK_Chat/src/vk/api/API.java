@@ -154,17 +154,32 @@ public class API {
         params.put("preview_length","0");
         JSONObject root = SendHttpPost(params);
         JSONArray array = root.optJSONArray("response");
-        ArrayList<Message> messages = parseMessages(array, false, 0, false ,0);
+        ArrayList<Message> messages = parseMessages(array, false, 0, false);
         return messages;
     }
     
-    private ArrayList<Message> parseMessages(JSONArray array, boolean from_history, long history_uid, boolean from_chat, long me) throws JSONException {
+    public ArrayList<Message> getMessagesHistory(long uid, long chat_id, Long offset, int count) throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("messages.getHistory");
+        if(chat_id<=0)
+            params.put("uid",uid);
+        else
+            params.put("chat_id",chat_id);
+        params.put("offset", offset);
+        if (count != 0)
+            params.put("count", count);
+        JSONObject root = SendHttpPost(params);
+        JSONArray array = root.optJSONArray("response");
+        ArrayList<Message> messages = parseMessages(array, chat_id<=0, uid, chat_id>0);
+        return messages;
+    }
+    
+    private ArrayList<Message> parseMessages(JSONArray array, boolean from_history, long history_uid, boolean from_chat) throws JSONException {
         ArrayList<Message> messages = new ArrayList<Message>();
         if (array != null) {
             int category_count = array.length();
             for(int i = 1; i < category_count; ++i) {
                 JSONObject o = (JSONObject)array.get(i);
-                Message m = Message.parse(o, from_history, history_uid, from_chat, me);
+                Message m = Message.parse(o, from_history, history_uid, from_chat);
                 messages.add(m);
             }
         }

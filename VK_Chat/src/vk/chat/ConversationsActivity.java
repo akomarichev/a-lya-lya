@@ -7,6 +7,8 @@ import vk.adapters.MySimpleArrayAdapterFast;
 import vk.api.API;
 import vk.api.Message;
 import vk.api.User;
+import vk.popup.ActionItem;
+import vk.popup.QuickAction;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,10 +17,13 @@ import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class ConversationsActivity extends Activity {
+	
 	
 	private ArrayList<Message> dialogs;
 
@@ -28,6 +33,11 @@ public class ConversationsActivity extends Activity {
 	    super.onCreate(savedInstanceState);
 	    requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.conversations);
+        
+        
+		
+		//Add action item
+        //ActionItem addAction = new ActionItem();
         
         API api = new API();
         
@@ -50,9 +60,19 @@ public class ConversationsActivity extends Activity {
 		listView.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
-			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
-					long arg3) {
-				startActivity(new Intent(ConversationsActivity.this, DialogActivity.class));
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				Message msg = new Message();
+				msg = dialogs.get(position);
+				
+				Intent intent = new Intent(ConversationsActivity.this, DialogActivity.class);
+				intent.putExtra("uid", msg.uid);
+				
+				startActivity(intent);
+				//startActivity(new Intent(ConversationsActivity.this, AudioActivity.class));
+				//
+				//Toast.makeText(getApplicationContext(),
+				//		"Click ListItem Number " + msg.uid, Toast.LENGTH_LONG)
+				//		.show();
 			}
 			
 		});

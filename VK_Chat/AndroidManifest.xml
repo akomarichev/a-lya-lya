@@ -30,6 +30,7 @@
         <activity android:name=".OnlineFriendsActivity"></activity>
         <activity android:name=".HandsetContactsActivity"></activity>
         <activity android:name=".DialogActivity"></activity>
+        <activity android:name=".AudioActivity"></activity>
     </application>
 
 </manifest>
