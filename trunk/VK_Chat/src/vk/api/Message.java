@@ -18,12 +18,12 @@ public class Message {
     public ArrayList<Attachment> attachments=new ArrayList<Attachment>();
     public Long chat_id;
 
-    public static Message parse(JSONObject o, boolean from_history, long history_uid, boolean from_chat, long me) throws NumberFormatException, JSONException{
+    public static Message parse(JSONObject o, boolean from_history, long history_uid, boolean from_chat) throws NumberFormatException, JSONException{
         Message m = new Message();
         if(from_chat){
             long from_id=o.getLong("from_id");
             m.uid = from_id;
-            m.is_out=(from_id==me);
+            m.is_out=(from_id!=history_uid);
         }else if(from_history){
             m.uid=history_uid;
             Long from_id = o.getLong("from_id");
