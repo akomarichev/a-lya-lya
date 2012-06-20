@@ -7,8 +7,12 @@
     <uses-sdk android:minSdkVersion="10" />
     
     <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
 
     <application>
+        <uses-library android:name="com.google.android.maps" />
         <activity
             android:name=".VK_ChatActivity"
             android:label="@string/app_name" 
@@ -31,6 +35,8 @@
         <activity android:name=".HandsetContactsActivity"></activity>
         <activity android:name=".DialogActivity"></activity>
         <activity android:name=".AudioActivity"></activity>
+        <activity android:name=".ChangePhotoActivity"></activity>
+        <activity android:name=".ShowMapActivity"></activity>
     </application>
 
 </manifest>

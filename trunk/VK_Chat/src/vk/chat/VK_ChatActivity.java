@@ -62,7 +62,8 @@ public class VK_ChatActivity extends TabActivity{
                       .setContent(intent);
         tabHost.addTab(spec);
         
-        intent = new Intent().setClass(this, SettingsActivity.class);
+        //intent = new Intent().setClass(this, SettingsActivity.class);
+        intent = new Intent().setClass(this, ChangePhotoActivity.class);
         spec = tabHost.newTabSpec("stg").setIndicator("",
                           res.getDrawable(R.drawable.tab_bottom_stg_s))
                       .setContent(intent);
