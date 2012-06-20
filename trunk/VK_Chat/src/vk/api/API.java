@@ -97,23 +97,15 @@ public class API {
         MultipartEntity ent = new MultipartEntity(
                     HttpMultipartMode.BROWSER_COMPATIBLE);
         Bitmap bitmapOrg= BitmapFactory.decodeFile(photo);
-        //Log.d("bitmap", bitmapOrg.toString());
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         bitmapOrg.compress(Bitmap.CompressFormat.JPEG, 90, bao);
         byte [] ba = bao.toByteArray();
-        //String ba1=Base64.encodeBytes(ba);
         ent.addPart("photo", new ByteArrayBody(ba,
                     "myImage.jpg"));
-        
-        //Log.d("ba1", ba);
         
         HttpClient httpclient = new DefaultHttpClient();
         HttpPost httppost = new HttpPost(URL);
         httppost.setEntity(ent);
-        /*ResponseHandler <String> res=new BasicResponseHandler();
-        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
-        nameValuePairs.add(new BasicNameValuePair("photo", ba1));
-        httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));*/
 
         for(int i=1;i<=MAX_TRIES;++i){
             try{
