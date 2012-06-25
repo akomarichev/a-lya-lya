@@ -212,7 +212,7 @@ public class QuickAction extends PopupWindows implements OnDismissListener {
             mInsertPos++;
         }
 		
-		container.setBackgroundResource(R.drawable.attach_background);
+		container.setBackgroundResource(R.drawable.action_item_btn);
 		container.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 50));
 		
 		mTrack.addView(container, mInsertPos);

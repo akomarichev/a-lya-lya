@@ -36,6 +36,7 @@ public class ContactsActivity extends TabActivity {
         // Initialize a TabSpec for each tab and add it to the TabHost
         spec = tabHost.newTabSpec("friends").setIndicator(getString(R.string.c_friends))
                       .setContent(intent);
+        
         tabHost.addTab(spec);
 
         // Do the same for the other tabs
@@ -52,6 +53,7 @@ public class ContactsActivity extends TabActivity {
         for(int i=0;i<tabHost.getTabWidget().getChildCount();i++)
         {
             tabHost.getTabWidget().getChildAt(i).setBackgroundResource(R.drawable.tab_black_bottom);
+            
         }
 	}
 
