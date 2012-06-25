@@ -9,10 +9,13 @@ import org.json.JSONException;
 import vk.api.API;
 import vk.api.Message;
 import vk.api.User;
+import vk.chat.ChatActivity;
 import vk.chat.R;
 import vk.chat.R.drawable;
 import vk.chat.R.id;
 import vk.chat.R.layout;
+import vk.constants.Constants;
+import vk.pref.Pref;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -54,7 +57,7 @@ public class ConversationsAdapter extends ArrayAdapter<Message> {
         this.values = objects;
         this.inflater = (LayoutInflater) this.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         loader =  new ImageDownloader();
-        api = new API();
+        api = new API(Pref.getAccessTokenHTTPS(context));
     }
     
     public int getItemViewType(int position){

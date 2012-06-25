@@ -7,8 +7,10 @@ import vk.adapters.MySimpleArrayAdapterFast;
 import vk.api.API;
 import vk.api.Message;
 import vk.api.User;
+import vk.constants.Constants;
 import vk.popup.ActionItem;
 import vk.popup.QuickAction;
+import vk.pref.Pref;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -39,7 +41,7 @@ public class ConversationsActivity extends Activity {
 		//Add action item
         //ActionItem addAction = new ActionItem();
         
-        API api = new API();
+        API api = new API(Pref.getAccessTokenHTTPS(ConversationsActivity.this));
         
         try{
         	//api.SendHttpPost(null);

@@ -1,11 +1,14 @@
 package vk.chat;
 
 import vk.api.API;
+import vk.constants.Constants;
+import vk.pref.Pref;
 
 import android.app.Activity;
 import android.app.TabActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -36,7 +39,14 @@ public class VK_ChatActivity extends TabActivity{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.main);   
+        setContentView(R.layout.main);
+        
+        if(!Pref.loggedIn(VK_ChatActivity.this)){
+	        Intent intent = new Intent();
+	        intent.setClass(VK_ChatActivity.this, LoginActivity.class);
+	        startActivity(intent);
+	        finish();
+        } else{
         
         Resources res = getResources(); // Resource object to get Drawables
         tabHost = getTabHost();  // The activity TabHost
@@ -69,8 +79,8 @@ public class VK_ChatActivity extends TabActivity{
         //spec.setIndicator(tabIndicator);
         tabHost.addTab(spec);
         
-        //intent = new Intent().setClass(this, SettingsActivity.class);
-        intent = new Intent().setClass(this, ChangePhotoActivity.class);
+        intent = new Intent().setClass(this, SettingsActivity.class);
+        //intent = new Intent().setClass(this, ChangePhotoActivity.class);
         spec = tabHost.newTabSpec("stg").setIndicator("",
                           res.getDrawable(R.drawable.tab_bottom_stg_s))
                       .setContent(intent);
@@ -99,7 +109,8 @@ public class VK_ChatActivity extends TabActivity{
 	        //Authorization();
         //}
         
-        repaintTabHost(); // добавил нотификацию.
+        //repaintTabHost(); // добавил нотификацию.
+        }
     }
     
     public void repaintTabHost(){
@@ -175,7 +186,7 @@ public class VK_ChatActivity extends TabActivity{
     private void Authorization(){
     	Account.restore(this);
     	if(Account.access_token!=null){
-            api=new API();
+            api=new API(Constants.ACCESS_TOKEN);
     	}
     	else
     		startLoginActivity(); 		

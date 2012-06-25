@@ -1,27 +1,43 @@
 package vk.chat;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.HashMap;
+
+import org.json.JSONException;
+
 import vk.api.API;
+import vk.constants.Constants;
+import vk.pref.Pref;
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 public class LoginActivity extends Activity {
-	API api;
-	Typeface tf;
+	private API api;
+	private Typeface tf;
 	
-	Button b_login;
-	ImageView iv_logo;
-	ImageView iv_login;
-	ImageView iv_pass;
-	EditText et_login;
-	EditText et_password;
+	private Button b_login;
+	private ImageView iv_logo;
+	private ImageView iv_login;
+	private ImageView iv_pass;
+	private EditText et_login;
+	private EditText et_password;
+	
+	private RelativeLayout layout;
+	
+	private HashMap<String, String> auth;
 	
 	
 	@Override
@@ -31,13 +47,7 @@ public class LoginActivity extends Activity {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.login);
 		
-		tf = Typeface.createFromAsset(getAssets(), "fonts/helvetica.ttf");
-		
-		Log.d("Artem", "1");
-		api = new API();
-		String response = "";
-		//response = api.SendHttpPost();
-		Log.d("Artem", response);
+		api = new API(Constants.ACCESS_TOKEN);
 		
 		setupUI();
 		setupFonts();	
@@ -45,6 +55,7 @@ public class LoginActivity extends Activity {
 	
 	private void setupUI(){
 		b_login = (Button) findViewById(R.id.button1);
+		b_login.setOnClickListener(b_login_listener);
 		iv_logo = (ImageView) findViewById(R.id.imageView1);
 		iv_login = (ImageView) findViewById(R.id.imageView2);
 		iv_pass = (ImageView) findViewById(R.id.imageView3);
@@ -52,13 +63,41 @@ public class LoginActivity extends Activity {
 		et_login.setOnFocusChangeListener(et_loginClick);
 		et_password = (EditText) findViewById(R.id.editText2);
 		et_password.setOnFocusChangeListener(et_passwordClick);
+		layout = (RelativeLayout) findViewById(R.id.relativeLayout);
+		layout.setOnClickListener(layoutClick);
 	}
 	
 	private void setupFonts(){
+		tf = Typeface.createFromAsset(getAssets(), "fonts/helvetica.ttf");
 		b_login.setTypeface(tf);
 		et_login.setTypeface(tf);
 		et_password.setTypeface(tf);
 	}
+	
+	private OnClickListener b_login_listener=new OnClickListener(){
+        @Override
+        public void onClick(View v) {
+        	try {
+				auth = api.authorizationHTTPS(et_login.getText().toString(), et_password.getText().toString());
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+        	
+        	//Log.d("loginActivity",auth.toString());
+        	if(auth==null){
+        		Toast.makeText(getApplicationContext(), getResources().getString(R.string.auth_error_login_info), Toast.LENGTH_SHORT).show();
+        	}else{
+        		Pref.logIn(LoginActivity.this);
+        		Pref.saveHTTPSAuth(LoginActivity.this, auth.get(Constants.ACCESS_TOKEN), auth.get(Constants.USER_ID));
+        		startActivity(new Intent(LoginActivity.this, VK_ChatActivity.class));
+        		finish();
+        	}
+        }
+    };
 	
 	private OnFocusChangeListener et_loginClick=new View.OnFocusChangeListener(){
 		@Override
@@ -79,6 +118,14 @@ public class LoginActivity extends Activity {
 	        }
 	        else
 	        	iv_pass.setImageResource(R.drawable.login_pass);
+	    }
+	};
+	
+	private OnClickListener layoutClick=new View.OnClickListener(){
+		@Override
+		public void onClick(View v) {
+			startActivity(new Intent(LoginActivity.this, SignupActivity.class));
+			finish();
 	    }
 	};
 }

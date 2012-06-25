@@ -7,6 +7,8 @@ import java.net.MalformedURLException;
 import org.json.JSONException;
 
 import vk.api.API;
+import vk.constants.Constants;
+import vk.pref.Pref;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -47,7 +49,7 @@ public class ChangePhotoActivity extends Activity {
 	    super.onCreate(savedInstanceState);
 	    setContentView(R.layout.change_photo);
 	    
-	    api = new API();
+	    api = new API(Pref.getAccessTokenHTTPS(ChangePhotoActivity.this));
 	    
 	    b = (Button) findViewById(R.id.to_change);
 	    iv = (ImageView) findViewById(R.id.ava);

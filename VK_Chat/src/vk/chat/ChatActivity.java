@@ -9,6 +9,8 @@ import org.json.JSONException;
 import vk.adapters.ChatAdapter;
 import vk.api.API;
 import vk.api.User;
+import vk.constants.Constants;
+import vk.pref.Pref;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
@@ -34,7 +36,7 @@ public class ChatActivity extends Activity {
 	    requestWindowFeature(Window.FEATURE_NO_TITLE);
 	    setContentView(R.layout.chat_users);
 	    
-	    API api = new API();
+	    API api = new API(Pref.getAccessTokenHTTPS(ChatActivity.this));
 	    type = getIntent().getExtras().getString("type");
 	    chat_id = getIntent().getExtras().getLong("chat_id");
 	    
