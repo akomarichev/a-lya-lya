@@ -10,10 +10,14 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
+import org.apache.commons.codec.binary.Hex;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -34,7 +38,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+
 import vk.utils.Base64;
+import vk.utils.MD5;
 import vk.utils.WrongResponseCodeException;
 
 import android.graphics.Bitmap;
@@ -46,11 +52,17 @@ import android.util.Log;
 public class API {
 	//private String url2 = "https://oauth.vk.com/token?grant_type=password&client_id=2985083&client_secret=powUs3vuKhIYNrgsLif1&username=calmnessart@mail.ru&password=nbvjynb";
 	private String url = "https://api.vk.com/method/";
+	private String url_nohttps = "http://api.vk.com/method/";
+	private String url_md5 = "/method/";
 	private String access_token="3c8616a539ec404439ec4044c439c1cc3f339ec39eb7cbb3dc0143b2f81d413";
+	private String access_token_nohttps = "699c8cef6cf6da0e6cf6da0e5b6cdb567576cf66cf6da0ecf565dc10839e9ca";
+	private String secret = "6dd8805b71b38c647d";
 	private String user_id = "90855137";
+	private String url2 = "https://oauth.vk.com/token";
+	//private final static String sig = "488acf9a75a8f929eabc7f808b9f1d9b";
 	
 	
-	private String getSignedUrl(Params params) {
+	private String getSignedUrl(Params params){
         String args = params.getParamsString();
         
         //add access_token
@@ -59,6 +71,34 @@ public class API {
         args+="access_token="+access_token;
         
         return url+params.method_name+"?"+args;
+        
+        // nohttps
+        /*if(args.length()!=0)
+            args+="&";
+        args+="access_token="+access_token_nohttps;
+        
+        //MD5 md5 = new MD5();                                        
+        //String sig=md5.getHash(url_md5+params.method_name+"?"+args+secret);  
+        String string = url_md5+params.method_name+"?"+args+secret;
+        MessageDigest messageDigest=null;
+		try {
+			messageDigest = MessageDigest.getInstance("MD5"); 
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        messageDigest.reset();
+        messageDigest.update(string.getBytes(Charset.forName("UTF8")));
+        final byte[] resultByte = messageDigest.digest();
+        final String sig = new String(Hex.encodeHex(resultByte));
+        
+        return url_nohttps+params.method_name+"?"+args+"&sig="+sig;*/
+    }
+	
+	private String getSignedUrl2(Params params) {
+        String args = params.getParamsString();
+        
+        return url2+params.method_name+"?"+args;
     }
 	
 	private String getSignedUrlPOST(Params params, String URL) {
@@ -72,7 +112,7 @@ public class API {
 	private final static int MAX_TRIES=3;
     private JSONObject sendRequest(Params params) throws IOException, MalformedURLException, JSONException{
         String url = getSignedUrl(params);
-        Log.d("Artem2",url);
+        Log.d("Artem2 nohttps",url);
         String response="";
         for(int i=1;i<=MAX_TRIES;++i){
             try{
@@ -173,7 +213,7 @@ public class API {
                 connection.disconnect();
         }
     }
-	public JSONObject SendHttpPost(Params params) {
+	public JSONObject SendHttpPost(Params params2) {
 		try {
 			/*Params params = new Params("");
 			params.put("scope", Auth.getSettings());
@@ -183,8 +223,16 @@ public class API {
 			params.put("username", "calmnessart@mail.ru");
 			params.put("password", "nbvjynb");*/
 			
+			Params params = new Params("");
+			params.put("scope", "nohttps");
+	        params.put("grant_type", "password");
+			params.put("client_id", "2985083");
+			params.put("client_secret", "powUs3vuKhIYNrgsLif1");
+			params.put("username", "calmnessart@mail.ru");
+			params.put("password", "nbvjynb");
 			
-			String URL = getSignedUrl(params);
+			
+			String URL = getSignedUrl2(params);
 			
 			Log.d("Artem", URL);
 			
@@ -212,7 +260,7 @@ public class API {
 				instream.close();
 				//resultString = resultString.substring(1,resultString.length()-1); // remove wrapping "[" and "]"
 
-				Log.d("API",resultString);
+				Log.d("API none https",resultString);
 				// Transform the String into a JSONObject
 				JSONObject jsonObjRecv = new JSONObject(resultString);
 				// Raw DEBUG output of our received JSON object:
@@ -355,5 +403,44 @@ public class API {
         String hash = root.getString("hash");
         String[] res=new String[]{server, photos, hash};
         return res;
+    }
+    
+    public ArrayList<User> getChatUsers(Long chat_id) throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("messages.getChatUsers");
+        params.put("chat_id", chat_id);
+        params.put("fields", "photo_rec,online");
+        
+        JSONObject root = sendRequest(params);
+        ArrayList<User> users=new ArrayList<User>();
+        JSONArray array=root.optJSONArray("response");
+        //if there are no friends "response" will not be array
+        if(array==null)
+            return users;
+        int category_count=array.length();
+        for(int i=0; i<category_count; ++i){
+            JSONObject o = (JSONObject)array.get(i);
+            User u = User.parse(o);
+            users.add(u);
+        }
+        return users;
+    }
+    
+    public ArrayList<User> getUsersByPhones(String phones) throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("friends.getByPhones");
+        params.put("phones", phones);
+        params.put("fields", "first_name,last_name,photo_rec");
+        
+        JSONObject root = sendRequest(params);
+        ArrayList<User> users=new ArrayList<User>();
+        JSONArray array=root.optJSONArray("response");
+        if(array==null)
+            return users;
+        int category_count=array.length();
+        for(int i=0; i<category_count; ++i){
+            JSONObject o = (JSONObject)array.get(i);
+            User u = User.parse(o);
+            users.add(u);
+        }
+        return users;
     }
 }

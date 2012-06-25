@@ -42,6 +42,7 @@ public class ConversationsActivity extends Activity {
         API api = new API();
         
         try{
+        	//api.SendHttpPost(null);
 			dialogs = api.getMessagesDialogs(0, 10);			
 		} catch (Exception e){
 			e.printStackTrace();
@@ -65,16 +66,24 @@ public class ConversationsActivity extends Activity {
 				msg = dialogs.get(position);
 				
 				Intent intent = new Intent(ConversationsActivity.this, DialogActivity.class);
-				intent.putExtra("uid", msg.uid);
+				if(msg.chat_id != null){				
+					Intent intent2 = new Intent(ConversationsActivity.this, ChatActivity.class);
+					intent2.putExtra("chat_id", msg.chat_id);
+					intent2.putExtra("type", "chat_id");
+					startActivity(intent2);
+				}
+				else{					
+					intent.putExtra("uid", msg.uid);
+					intent.putExtra("type", "uid");
+					startActivity(intent);
+				}				
 				
-				startActivity(intent);
 				//startActivity(new Intent(ConversationsActivity.this, AudioActivity.class));
 				//
 				//Toast.makeText(getApplicationContext(),
 				//		"Click ListItem Number " + msg.uid, Toast.LENGTH_LONG)
 				//		.show();
-			}
-			
+			}			
 		});
 	}
 

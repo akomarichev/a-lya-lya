@@ -27,15 +27,15 @@ import android.widget.ImageView;
 public class ImageDownloader {
 
     public void download(String url, ImageView imageView) {
-    	//if (cancelPotentialDownload(url, imageView)) {
+    	if (cancelPotentialDownload(url, imageView)) {
         BitmapDownloaderTask task = new BitmapDownloaderTask(imageView);
         DownloadedDrawable downloadedDrawable = new DownloadedDrawable(task);
         imageView.setImageDrawable(downloadedDrawable);
         task.execute(url);
-        //}
+        }
     }
     
-    /*private static boolean cancelPotentialDownload(String url, ImageView imageView) {
+    private static boolean cancelPotentialDownload(String url, ImageView imageView) {
         BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
 
         if (bitmapDownloaderTask != null) {
@@ -48,7 +48,7 @@ public class ImageDownloader {
             }
         }
         return true;
-    }*/
+    }
     
     private static BitmapDownloaderTask getBitmapDownloaderTask(ImageView imageView) {
         if (imageView != null) {

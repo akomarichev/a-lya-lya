@@ -10,8 +10,9 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
 
-    <application>
+    <application android:theme="@style/MyTheme">
         <uses-library android:name="com.google.android.maps" />
         <activity
             android:name=".VK_ChatActivity"
@@ -37,6 +38,8 @@
         <activity android:name=".AudioActivity"></activity>
         <activity android:name=".ChangePhotoActivity"></activity>
         <activity android:name=".ShowMapActivity"></activity>
+        <activity android:name=".ChatActivity"></activity>
+        <activity android:name=".SynchActivity"></activity>
     </application>
 
 </manifest>

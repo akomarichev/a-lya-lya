@@ -36,9 +36,7 @@ public class FriendsActivity extends Activity implements OnScrollListener{
 	    super.onCreate(savedInstanceState);
 	    requestWindowFeature(Window.FEATURE_NO_TITLE);
 	    setContentView(R.layout.friends);
-	    
-	    
-	    
+   
 	    final Handler handler = new Handler();
 	    
 	    new AsyncTask<Context, Void, Void>() {
@@ -53,8 +51,7 @@ public class FriendsActivity extends Activity implements OnScrollListener{
 		    		} catch (Exception e){
 		    			e.printStackTrace();
 		    		} 
-		            
-		            	            
+	            	            
 		            max = friends.size();
 		            
 		           	
