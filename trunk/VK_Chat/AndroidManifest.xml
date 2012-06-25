@@ -40,6 +40,7 @@
         <activity android:name=".ShowMapActivity"></activity>
         <activity android:name=".ChatActivity"></activity>
         <activity android:name=".SynchActivity"></activity>
+        <activity android:name=".ConfirmActivity"></activity>
     </application>
 
 </manifest>

@@ -14,6 +14,7 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
@@ -39,6 +40,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 
+import vk.constants.Constants;
 import vk.utils.Base64;
 import vk.utils.MD5;
 import vk.utils.WrongResponseCodeException;
@@ -54,12 +56,20 @@ public class API {
 	private String url = "https://api.vk.com/method/";
 	private String url_nohttps = "http://api.vk.com/method/";
 	private String url_md5 = "/method/";
-	private String access_token="3c8616a539ec404439ec4044c439c1cc3f339ec39eb7cbb3dc0143b2f81d413";
+	//private String access_token="3c8616a539ec404439ec4044c439c1cc3f339ec39eb7cbb3dc0143b2f81d413";
 	private String access_token_nohttps = "699c8cef6cf6da0e6cf6da0e5b6cdb567576cf66cf6da0ecf565dc10839e9ca";
 	private String secret = "6dd8805b71b38c647d";
 	private String user_id = "90855137";
 	private String url2 = "https://oauth.vk.com/token";
 	//private final static String sig = "488acf9a75a8f929eabc7f808b9f1d9b";
+	
+	private String access_token;
+	
+	public API(String access_token){
+        this.access_token=access_token;
+    }
+	
+	//API(){}
 	
 	
 	private String getSignedUrl(Params params){
@@ -68,7 +78,8 @@ public class API {
         //add access_token
         if(args.length()!=0)
             args+="&";
-        args+="access_token="+access_token;
+        if(access_token!=Constants.ACCESS_TOKEN)
+        	args+="access_token="+access_token;
         
         return url+params.method_name+"?"+args;
         
@@ -95,10 +106,10 @@ public class API {
         return url_nohttps+params.method_name+"?"+args+"&sig="+sig;*/
     }
 	
-	private String getSignedUrl2(Params params) {
+	private String getSignedUrlAuth(Params params) {
         String args = params.getParamsString();
         
-        return url2+params.method_name+"?"+args;
+        return Constants.url_auth+params.method_name+"?"+args;
     }
 	
 	private String getSignedUrlPOST(Params params, String URL) {
@@ -112,7 +123,25 @@ public class API {
 	private final static int MAX_TRIES=3;
     private JSONObject sendRequest(Params params) throws IOException, MalformedURLException, JSONException{
         String url = getSignedUrl(params);
-        Log.d("Artem2 nohttps",url);
+        //Log.d("Artem2 nohttps",url);
+        String response="";
+        for(int i=1;i<=MAX_TRIES;++i){
+            try{
+                response = sendRequestInternal(url);
+                break;
+            }catch(javax.net.ssl.SSLException ex){
+                processNetworkException(i, ex);
+            }catch(java.net.SocketException ex){
+                processNetworkException(i, ex);
+            }
+        }
+        JSONObject root=new JSONObject(response);
+        return root;
+    }
+    
+    private JSONObject sendRequestAuth(Params params) throws IOException, MalformedURLException, JSONException{
+        String url = getSignedUrlAuth(params);
+        //Log.d("Artem2 nohttps",url);
         String response="";
         for(int i=1;i<=MAX_TRIES;++i){
             try{
@@ -232,7 +261,7 @@ public class API {
 			params.put("password", "nbvjynb");
 			
 			
-			String URL = getSignedUrl2(params);
+			String URL = getSignedUrlAuth(params);
 			
 			Log.d("Artem", URL);
 			
@@ -442,5 +471,102 @@ public class API {
             users.add(u);
         }
         return users;
+    }
+    
+    public HashMap<String,String> authorizationHTTPS(String username, String password) throws MalformedURLException, IOException, JSONException{
+    	Params params = new Params("");
+    	params.put(Constants.S_SCOPE, Auth.getSettings());
+        params.put(Constants.S_GRANT_TYPE, Constants.S_PASSWORD);
+		params.put(Constants.S_CLIENT_ID, Constants.CLIENT_ID);
+		params.put(Constants.S_CLIENT_SECRET, Constants.CLIENT_SECRET);
+		params.put(Constants.S_USERNAME, username);
+		params.put(Constants.S_PASSWORD, password);
+		HashMap<String,String> result = new HashMap<String,String>();
+		//result = null;
+		JSONObject root = sendRequestAuth(params);
+		Log.d("responseHTTPS",root.toString());
+		if(!root.isNull(Constants.ACCESS_TOKEN))
+            result.put(Constants.ACCESS_TOKEN, API.unescape(root.getString(Constants.ACCESS_TOKEN)));
+		if(!root.isNull(Constants.ACCESS_TOKEN))
+            result.put(Constants.USER_ID, API.unescape(root.getString(Constants.USER_ID)));
+		return result;
+    }
+    
+    public HashMap<String,String> authorizationNoHTTPS(String username, String password) throws MalformedURLException, IOException, JSONException{
+    	Params params = new Params("");
+    	params.put(Constants.S_SCOPE, "nohttps");
+        params.put(Constants.S_GRANT_TYPE, Constants.S_PASSWORD);
+		params.put(Constants.S_CLIENT_ID, Constants.CLIENT_ID);
+		params.put(Constants.S_CLIENT_SECRET, Constants.CLIENT_SECRET);
+		params.put(Constants.S_USERNAME, username);
+		params.put(Constants.S_PASSWORD, password);
+		JSONObject root = sendRequestAuth(params);
+		JSONArray array=root.optJSONArray("response");
+		Log.d("responseNoHTTPS",array.toString());
+		return null;
+    }
+    
+    public int checkPhone(String phone) throws MalformedURLException, IOException, JSONException{
+    	Params params = new Params("auth.checkPhone");
+    	params.put("phone", phone);
+		params.put(Constants.S_CLIENT_ID, Constants.CLIENT_ID);
+		params.put(Constants.S_CLIENT_SECRET, Constants.CLIENT_SECRET);
+		int result = 0;
+		JSONObject root = sendRequest(params);
+		Log.d("SIGNUP",root.toString());
+		
+		//{"error":{"error_code":100,"error_msg":"One of the parameters specified was missing or invalid: phone is incorrect","request_params":[{"key":"oauth","value":"1"},{"key":"method","value":"auth.checkPhone"},{"key":"phone","value":"8913"}]}}
+		if(!root.isNull("response"))
+			result = Integer.parseInt(root.getString("response"));
+		if(!root.isNull("error")){
+			JSONObject error=root.optJSONObject("error");
+			result = Integer.parseInt(error.getString("error_code"));
+		}
+		return result;
+    }
+    
+    public int signupPhone(String phone, String first_name, String last_name) throws MalformedURLException, IOException, JSONException{
+    	Params params = new Params("auth.signup");
+    	params.put("phone", phone);
+    	params.put("first_name", first_name);
+    	params.put("last_name", last_name);
+		params.put(Constants.S_CLIENT_ID, Constants.CLIENT_ID);
+		params.put(Constants.S_CLIENT_SECRET, Constants.CLIENT_SECRET);
+		int result = 0;
+		int sid;
+		JSONObject root = sendRequest(params);
+		Log.d("SIGNUP",root.toString());
+		JSONObject object=root.optJSONObject("response");
+		//{"error":{"error_code":100,"error_msg":"One of the parameters specified was missing or invalid: phone is incorrect","request_params":[{"key":"oauth","value":"1"},{"key":"method","value":"auth.checkPhone"},{"key":"phone","value":"8913"}]}}
+		if(!root.isNull("sid")){
+			sid = Integer.parseInt(object.getString("sid"));
+			result = 1;
+		}
+		if(!root.isNull("error")){
+			JSONObject error=root.optJSONObject("error");
+			result = Integer.parseInt(error.getString("error_code"));
+		}
+		return result;
+    }
+    
+    public int confirmPhone(String phone, String code, String password) throws MalformedURLException, IOException, JSONException{
+    	Params params = new Params("auth.confirm");
+    	params.put("phone", phone);
+    	params.put("code", code);
+    	params.put("password", password);
+		params.put(Constants.S_CLIENT_ID, Constants.CLIENT_ID);
+		params.put(Constants.S_CLIENT_SECRET, Constants.CLIENT_SECRET);
+		int result = 0;
+		JSONObject root = sendRequest(params);
+		Log.d("SIGNUP",root.toString());
+		JSONObject object=root.optJSONObject("response");
+		//{"error":{"error_code":100,"error_msg":"One of the parameters specified was missing or invalid: phone is incorrect","request_params":[{"key":"oauth","value":"1"},{"key":"method","value":"auth.checkPhone"},{"key":"phone","value":"8913"}]}}
+		if(!root.isNull("success"))
+			result = Integer.parseInt(object.getString("success"));
+		if(!root.isNull("error")){
+			JSONObject error=root.optJSONObject("error");
+			result = Integer.parseInt(error.getString("error_code"));
+		}
+		return result;
     }
 }

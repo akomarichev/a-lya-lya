@@ -5,8 +5,12 @@ import java.util.ArrayList;
 import vk.adapters.MySimpleArrayAdapterFast;
 import vk.api.API;
 import vk.api.User;
+import vk.constants.Constants;
+import vk.pref.Pref;
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -43,7 +47,7 @@ public class FriendsActivity extends Activity implements OnScrollListener{
 
 	        @Override
 	        protected Void doInBackground(Context... params) {
-		            API api = new API();
+		            API api = new API(Pref.getAccessTokenHTTPS(FriendsActivity.this));
 		            
 		            try{
 		    			friends = api.getFriends();
@@ -157,4 +161,5 @@ public class FriendsActivity extends Activity implements OnScrollListener{
 		// TODO Auto-generated method stub
 		
 	}
+
 }

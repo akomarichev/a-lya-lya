@@ -12,9 +12,11 @@ import vk.adapters.DialogAdapter;
 import vk.api.API;
 import vk.api.Message;
 import vk.api.User;
+import vk.constants.Constants;
 import vk.horizontal.listview.ui.HorizontalListView;
 import vk.popup.ActionItem;
 import vk.popup.QuickAction;
+import vk.pref.Pref;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -140,7 +142,7 @@ public class DialogActivity extends Activity {
 		Log.d("DialogActivity", "2");
         
 		user_id = chat_id = 0;
-		API api = new API();
+		API api = new API(Pref.getAccessTokenHTTPS(DialogActivity.this));
 		
 		type = getIntent().getExtras().getString("type");
 		if(type.equals("uid"))
