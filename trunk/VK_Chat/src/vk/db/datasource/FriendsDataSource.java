@@ -80,4 +80,9 @@ public class FriendsDataSource {
 		friend.mobile_phone = cursor.getString(5);
 		return friend;
 	}
+	
+	public void removeAll()
+	{
+	    database.delete(FriendsSQLiteHelper.TABLE_FRIENDS, null, null);
+	}
 }

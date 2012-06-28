@@ -367,6 +367,7 @@ public class API {
         //JSONObject root = SendHttpPost(params);
         JSONObject root = sendRequest(params);
         JSONArray array = root.optJSONArray("response");
+        Log.d("conversation", array.toString());
         ArrayList<Message> messages = parseMessages(array, false, 0, false);
         return messages;
     }
