@@ -5,9 +5,19 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 
+import vk.chat.R;
+
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PorterDuff.Mode;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.http.AndroidHttpClient;
@@ -192,7 +202,7 @@ public class ImageDownloaderFast {
                 // Move element to first position, so that it is removed last
                 sHardBitmapCache.remove(url);
                 sHardBitmapCache.put(url, bitmap);
-                return bitmap;
+                return (bitmap);
             }
         }
 
@@ -313,7 +323,8 @@ public class ImageDownloaderFast {
                 BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
                 // Change bitmap only if this process is still associated with it
                 if (this == bitmapDownloaderTask) {
-                    imageView.setImageBitmap(bitmap);
+                    //imageView.setImageResource(R.drawable.ava_background);
+                	imageView.setImageDrawable(new BitmapDrawable((bitmap)));
                 }
             }
         }
@@ -338,7 +349,7 @@ public class ImageDownloaderFast {
         private final WeakReference<BitmapDownloaderTask> bitmapDownloaderTaskReference;
 
         public DownloadedDrawable(BitmapDownloaderTask bitmapDownloaderTask) {
-            super(Color.BLACK);
+            //super(Color.BLACK);
             bitmapDownloaderTaskReference =
                 new WeakReference<BitmapDownloaderTask>(bitmapDownloaderTask);
         }
@@ -347,4 +358,27 @@ public class ImageDownloaderFast {
             return bitmapDownloaderTaskReference.get();
         }
     }
+    
+//    public static Bitmap getRoundedCornerImage(Bitmap bitmap) {
+//    	Bitmap output = Bitmap.createBitmap(bitmap.getWidth(),
+//    	    bitmap.getHeight(), Config.ARGB_8888);
+//    	Canvas canvas = new Canvas(output);
+//
+//    	final int color = 0xff424242;
+//    	final Paint paint = new Paint();
+//    	final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+//    	final RectF rectF = new RectF(rect);
+//    	final float roundPx = 5;
+//
+//    	paint.setAntiAlias(true);
+//    	canvas.drawARGB(0, 0, 0, 0);
+//    	paint.setColor(color);
+//    	canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
+//
+//    	paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
+//    	canvas.drawBitmap(bitmap, rect, rect, paint);
+//
+//    	return output;
+//
+//    	}
 }

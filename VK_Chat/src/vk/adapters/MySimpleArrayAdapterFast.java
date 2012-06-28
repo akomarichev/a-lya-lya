@@ -56,10 +56,10 @@ public class MySimpleArrayAdapterFast extends ArrayAdapter<User> {
         viewHolder.image_ava.setBackgroundResource(R.drawable.contact_nophoto);
         //Log.d("Online",values[position].online.toString());
         if(values[position].online == true){
-        	viewHolder.image_online.setBackgroundResource(R.drawable.online_list);
+        	viewHolder.image_online.setVisibility(View.VISIBLE);
         }
         else{
-        	viewHolder.image_online.setBackgroundColor(Color.BLACK);
+        	viewHolder.image_online.setVisibility(View.INVISIBLE);
         }
         viewHolder.image_ava.setTag(values[position].photo_rec);
         loader.download(values[position].photo_rec, viewHolder.image_ava);

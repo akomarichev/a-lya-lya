@@ -6,9 +6,11 @@ import vk.adapters.MySimpleArrayAdapterFast;
 import vk.api.API;
 import vk.api.User;
 import vk.constants.Constants;
+import vk.db.datasource.FriendsDataSource;
 import vk.pref.Pref;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
@@ -21,17 +23,20 @@ import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 public class FriendsActivity extends Activity implements OnScrollListener{
 	private ArrayList<User> friends;
+	private ArrayList<User> friends_db;
 	private static int max;
 	private static final int UPDATE_LIST = 100;
 	private static Integer currentPosition = 0;
 	private static User [] u;
 	static ListView listView;
 	MySimpleArrayAdapterFast adapter;
+	private FriendsDataSource db_friends;
 	
 
 	/** Called when the activity is first created. */
@@ -42,19 +47,32 @@ public class FriendsActivity extends Activity implements OnScrollListener{
 	    setContentView(R.layout.friends);
    
 	    final Handler handler = new Handler();
+	    db_friends = new FriendsDataSource(this);
+	    db_friends.open();
 	    
 	    new AsyncTask<Context, Void, Void>() {
 
 	        @Override
 	        protected Void doInBackground(Context... params) {
-		            API api = new API(Pref.getAccessTokenHTTPS(FriendsActivity.this));
+		            API api = new API(Pref.getAccessTokenHTTPS(FriendsActivity.this)); 
 		            
-		            try{
-		    			friends = api.getFriends();
-		    			
-		    		} catch (Exception e){
-		    			e.printStackTrace();
-		    		} 
+		            //Pref.cancelLoadedFriendsDB(FriendsActivity.this);
+		            
+		            if(!Pref.loadedFriendsDB(FriendsActivity.this)){
+		            	try{
+			    			friends = api.getFriends();		    			
+			    		} catch (Exception e){
+			    			e.printStackTrace();
+			    		}
+		            	db_friends.removeAll();
+		            	loadFriendDb(friends);
+		            }
+		            else{
+		            	friends = db_friends.getAllFriends();
+		            	db_friends.close();
+		            }
+		            	
+		            Log.d("FriendsActivity.this", friends.toString());
 	            	            
 		            max = friends.size();
 		            
@@ -84,6 +102,7 @@ public class FriendsActivity extends Activity implements OnScrollListener{
 	     		            
 	     		            adapter = new MySimpleArrayAdapterFast(getApplicationContext(), u);
 	     				   listView.setAdapter(adapter);
+	     				   
 	     			       //adapter.notifyDataSetChanged();
 	     			       
 	                     }
@@ -161,5 +180,17 @@ public class FriendsActivity extends Activity implements OnScrollListener{
 		// TODO Auto-generated method stub
 		
 	}
+	
+	
+	private void loadFriendDb(final ArrayList<User> friends_db) {
+        new Thread(){
+            @Override
+            public void run(){
+            	db_friends.addFriends(friends_db);
+            	Pref.setLoadedFriendsDB(FriendsActivity.this);
+            	db_friends.close();
+            }
+        }.start();
+    }
 
 }

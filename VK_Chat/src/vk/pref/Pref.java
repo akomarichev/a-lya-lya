@@ -9,7 +9,79 @@ import android.preference.PreferenceManager;
 public class Pref {
     public static String HAS_LOGGED_IN = "hasLoggedIn";   
     public static String HAS_SIGNUP = "hasSignUp";
+    
+    // DB
+    public static String DB_FRIENDS = "dbFriendsLoaded";
+    public static String DB_CONVERSATIONS = "dbFriendsConversations";
+    public static String DB_CHAT = "dbChatLoaded";
+    
     private static String PREFS_NAME = "my_prefs";
+    
+    /* DB */
+    // FRIENDS DB
+	public static void setLoadedFriendsDB(Context c){
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+        Editor editor=prefs.edit();
+        editor.putBoolean(DB_FRIENDS, true);
+        editor.commit();
+	}
+	
+    public static void cancelLoadedFriendsDB(Context c){
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+        Editor editor=prefs.edit();
+        editor.putBoolean(DB_FRIENDS, false);
+        editor.commit();
+	}
+    
+	public static Boolean loadedFriendsDB(Context c){
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+		final Editor editor=prefs.edit();
+		return prefs.getBoolean(DB_FRIENDS, false);
+	}    
+
+    // DB_CONVERSATIONS
+	public static void setLoadedConversationsDB(Context c){
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+        Editor editor=prefs.edit();
+        editor.putBoolean(DB_CONVERSATIONS, true);
+        editor.commit();
+	}
+	
+    public static void cancelLoadedConversationsDB(Context c){
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+        Editor editor=prefs.edit();
+        editor.putBoolean(DB_CONVERSATIONS, false);
+        editor.commit();
+	}
+    
+	public static Boolean loadedConversationsDB(Context c){
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+		final Editor editor=prefs.edit();
+		return prefs.getBoolean(DB_CONVERSATIONS, false);
+	}    
+	
+	// DB_CHAT
+		public static void setLoadedChatDB(Context c){
+			SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+	        Editor editor=prefs.edit();
+	        editor.putBoolean(DB_CHAT, true);
+	        editor.commit();
+		}
+		
+	    public static void cancelLoadedChatDB(Context c){
+			SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+	        Editor editor=prefs.edit();
+	        editor.putBoolean(DB_CHAT, false);
+	        editor.commit();
+		}
+	    
+		public static Boolean loadedChatDB(Context c){
+			SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+			final Editor editor=prefs.edit();
+			return prefs.getBoolean(DB_CHAT, false);
+		}   
+    
+    /* END WORK WITH DB */
     
 	public static void logIn(Context c){
 		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
