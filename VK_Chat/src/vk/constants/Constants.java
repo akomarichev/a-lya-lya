@@ -4,6 +4,9 @@ public class Constants {
 	public static String ACCESS_TOKEN = "access_token";
 	public static String ACCESS_TOKEN_NOHTTPS = "access_token_nohttps";
 	public static String USER_ID = "user_id";
+	public static String LONGPOLL_KEY = "key";
+	public static String LONGPOLL_SERVER = "server";
+	public static String LONGPOLL_TS = "ts";
 	
 	public static String CLIENT_ID = "2985083";
 	public static String CLIENT_SECRET = "powUs3vuKhIYNrgsLif1";

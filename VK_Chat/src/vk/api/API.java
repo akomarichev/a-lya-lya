@@ -39,7 +39,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
 import vk.constants.Constants;
 import vk.utils.Base64;
 import vk.utils.MD5;
@@ -205,6 +204,35 @@ public class API {
         }
         JSONObject root=new JSONObject(response);
         return root;
+    }
+    
+    private String getLongPollInternal(String url) throws IOException, MalformedURLException, WrongResponseCodeException {
+        HttpURLConnection connection=null;
+        try{
+            connection = (HttpURLConnection)new URL(url).openConnection();
+            connection.setConnectTimeout(30000);
+            connection.setReadTimeout(30000);
+            connection.setUseCaches(false);
+            connection.setDoOutput(false);
+            connection.setDoInput(true);
+            connection.setRequestProperty("Accept-Encoding", "gzip");
+            connection.setRequestProperty("Connection", "Keep-Alive");
+            int code=connection.getResponseCode();
+            //It may happen due to keep-alive problem http://stackoverflow.com/questions/1440957/httpurlconnection-getresponsecode-returns-1-on-second-invocation
+            if (code==-1)
+                throw new WrongResponseCodeException("Network error");
+            InputStream is = new BufferedInputStream(connection.getInputStream(), 8192);
+            String enc=connection.getHeaderField("Content-Encoding");
+            if(enc!=null && enc.equalsIgnoreCase("gzip"))
+                is = new GZIPInputStream(is);
+            String response=convertStreamToString(is);
+            Log.d("LongPoll",response);
+            return response;
+        }
+        finally{
+            if(connection!=null)
+                connection.disconnect();
+        }
     }
     
     
@@ -570,4 +598,50 @@ public class API {
 		}
 		return result;
     }
+    
+    public Object[] getLongPollServer() throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("messages.getLongPollServer");
+        JSONObject root = sendRequest(params);
+        JSONObject response = root.getJSONObject("response");
+        Log.d("getLongPollServer()", root.toString());
+        String key=response.getString("key");
+        String server=response.getString("server");
+        Long ts = response.getLong("ts");
+        return new Object[]{key, server, ts};
+    }
+    
+    public void getLongPollHistory(Long ts) throws MalformedURLException, IOException, JSONException{
+    	Params params = new Params("messages.getLongPollHistory");
+    	params.put("ts", ts);
+    	JSONObject root = sendRequest(params);
+        JSONObject response = root.getJSONObject("response");
+        Log.d("getLongPollHistory()", response.toString());
+    }
+    
+    public String registerDevice() 
+            throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("account.registerDevice");
+        params.put("token", access_token);
+        //params.put("device_model", device_model);
+        //params.put("system_version", system_version);
+        //params.put("no_text", no_text);
+        JSONObject root = sendRequest(params);
+        Log.d("registerDevice()", root.toString());
+        return root.getString("response");
+    }
+    
+    public String unregisterDevice() throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("account.unregisterDevice");
+        params.put("token", access_token);
+        JSONObject root = sendRequest(params);
+        Log.d("unregisterDevice()", root.toString());
+        return root.getString("response");
+    }
+    
+    public void getPoll(String key, String server, Long ts) throws MalformedURLException, IOException, JSONException{
+    	String url = "http://"+server+"?act=a_check&key="+key+"&ts="+ts+"&wait=25&mode=2";
+    	Log.d("QWE", url);
+    	getLongPollInternal(url);
+    }
+    
 }

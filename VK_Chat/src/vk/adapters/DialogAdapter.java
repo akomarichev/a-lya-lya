@@ -48,7 +48,10 @@ public class DialogAdapter extends ArrayAdapter<Message> {
 	    
 	    class ViewHolder {
 			public TextView text;
+			public TextView time_left;
+			public TextView time_right;
 			public LinearLayout wrapper;
+			public LinearLayout wrapper_right;
 			//public ImageView image_ava;
 			//public ImageView image_online;
 		}
@@ -68,21 +71,34 @@ public class DialogAdapter extends ArrayAdapter<Message> {
 	    	final ViewHolder viewHolder = new ViewHolder();
 	        convertView = inflater.inflate(R.layout.listitem_dialog, null);
 			viewHolder.text = (TextView) convertView.findViewById(R.id.iv_itemlist_dialog);
-			viewHolder.wrapper = (LinearLayout) convertView.findViewById(R.id.wrapper2);
 			
+			viewHolder.wrapper = (LinearLayout) convertView.findViewById(R.id.wrapper2);	
+			//viewHolder.wrapper_right = (LinearLayout) convertView.findViewById(R.id.wrapper3);
+			viewHolder.time_left = (TextView) convertView.findViewById(R.id.iv_itemlist_time_left);
+			viewHolder.time_right = (TextView) convertView.findViewById(R.id.iv_itemlist_time_right);
 			
-				
 	        viewHolder.text.setText(values[position].body);
 	        LayoutParams lpView = (LayoutParams) viewHolder.wrapper.getLayoutParams();
 	        lpView.gravity = values[position].is_out ? Gravity.RIGHT : Gravity.LEFT;
 	        lpView.height = LayoutParams.WRAP_CONTENT;
 	        lpView.width = LayoutParams.WRAP_CONTENT;
+	        
+	        /*LayoutParams lpView3 = (LayoutParams) viewHolder.wrapper_right.getLayoutParams();
+	        lpView.gravity = Gravity.RIGHT;
+	        lpView.height = LayoutParams.WRAP_CONTENT;
+	        lpView.width = LayoutParams.WRAP_CONTENT;*/
+	        
 	        if(values[position].is_out){
 	        	lpView.leftMargin = 10;
+	        	viewHolder.time_right.setVisibility(View.GONE);
+	        	viewHolder.time_left.setVisibility(View.VISIBLE);
 	        }else{
-	        	lpView.rightMargin = 10;
+	        	lpView.rightMargin = 60;
+	        	viewHolder.time_left.setVisibility(View.GONE);
+	        	viewHolder.time_right.setVisibility(View.VISIBLE);
 	        }
 	        viewHolder.wrapper.setLayoutParams(lpView);
+	        //viewHolder.wrapper_right.setLayoutParams(lpView3);
 	        viewHolder.wrapper.setBackgroundResource(values[position].is_out ? R.drawable.dialog_msgout : R.drawable.dialog_msgin_inbox);
 	        
 	        if(checkedItems.contains((Integer) position)){
