@@ -140,4 +140,35 @@ public class Pref {
     	SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
         return prefs.getString(Constants.USER_ID, null);       
     }
+    
+    // LONGPOLL
+    
+    public static void setLongPollServer(Context c, String key, String server, Long ts){
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+        Editor editor=prefs.edit();
+        editor.putString(Constants.LONGPOLL_KEY, key);
+        editor.putString(Constants.LONGPOLL_SERVER, server);
+        editor.putLong(Constants.LONGPOLL_TS, ts);
+        editor.commit();
+	}
+	
+    public static void outLongPollServer(Context c){
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+        Editor editor=prefs.edit();
+        editor.remove(Constants.LONGPOLL_KEY);
+        editor.remove(Constants.LONGPOLL_SERVER);
+        editor.remove(Constants.LONGPOLL_TS);
+        editor.putBoolean(HAS_LOGGED_IN, false);
+        editor.commit();
+	}
+    
+	public static Object[] getLongPollServerParametrs(Context c){
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+		String key=prefs.getString(Constants.LONGPOLL_KEY, null);
+        String server=prefs.getString(Constants.LONGPOLL_SERVER, null);
+        Long ts = prefs.getLong(Constants.LONGPOLL_TS, 0);
+        return new Object[]{key, server, ts};
+	}
+    
+    // END LONGPOLL
 }
