@@ -213,7 +213,7 @@ public class QuickAction extends PopupWindows implements OnDismissListener {
         }
 		
 		container.setBackgroundResource(R.drawable.action_item_btn);
-		container.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 50));
+		container.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 70));
 		
 		mTrack.addView(container, mInsertPos);
 		
@@ -355,7 +355,7 @@ public class QuickAction extends PopupWindows implements OnDismissListener {
         
         ViewGroup.MarginLayoutParams param = (ViewGroup.MarginLayoutParams)showArrow.getLayoutParams();
        
-        param.leftMargin = requestedX - arrowWidth / 2;
+        //param.leftMargin = requestedX - arrowWidth / 2;
         
         hideArrow.setVisibility(View.INVISIBLE);
     }

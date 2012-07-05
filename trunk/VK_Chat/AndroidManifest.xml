@@ -17,6 +17,7 @@
         <activity
             android:name=".VK_ChatActivity"
             android:label="@string/app_name" 
+            android:configChanges="orientation|keyboardHidden"
             android:windowSoftInputMode="adjustPan|adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,23 +25,42 @@
             </intent-filter>
         </activity>
         
-        <activity android:name=".LoginActivity"/>
-        <activity android:name=".SignupActivity"></activity>
-        <activity android:name=".ContactsActivity"></activity>
-        <activity android:name=".ConversationsActivity"></activity>
-        <activity android:name=".SearchActivity"></activity>
-        <activity android:name=".SettingsActivity"></activity>
+        <activity android:name=".LoginActivity"
+            			android:configChanges="orientation|keyboardHidden"/>
+        <activity android:name=".SignupActivity"
+            			android:configChanges="orientation|keyboardHidden"></activity>
+        <activity android:name=".ContactsActivity"
+            			android:configChanges="orientation|keyboardHidden"></activity>
+        <activity android:name=".ConversationsActivity"
+            			android:configChanges="orientation|keyboardHidden"></activity>
+        <activity android:name=".SearchActivity"
+            			android:configChanges="orientation|keyboardHidden"></activity>
+        <activity android:name=".SettingsActivity"
+            			android:configChanges="orientation|keyboardHidden"></activity>
         <activity android:name=".FriendsActivity"
-            android:windowSoftInputMode="adjustPan|adjustResize"></activity>
-        <activity android:name=".OnlineFriendsActivity"></activity>
-        <activity android:name=".HandsetContactsActivity"></activity>
-        <activity android:name=".DialogActivity"></activity>
-        <activity android:name=".AudioActivity"></activity>
-        <activity android:name=".ChangePhotoActivity"></activity>
-        <activity android:name=".ShowMapActivity"></activity>
-        <activity android:name=".ChatActivity"></activity>
-        <activity android:name=".SynchActivity"></activity>
-        <activity android:name=".ConfirmActivity"></activity>
+            			android:windowSoftInputMode="adjustPan|adjustResize"
+            			android:configChanges="orientation|keyboardHidden"></activity>
+        <activity android:name=".OnlineFriendsActivity"
+            			android:configChanges="orientation|keyboardHidden"></activity>
+        <activity android:name=".HandsetContactsActivity"
+            			android:configChanges="orientation|keyboardHidden"></activity>
+        <activity android:name=".DialogActivity"
+            			android:configChanges="orientation|keyboardHidden"></activity>
+        <activity android:name=".AudioActivity"
+            			android:configChanges="orientation|keyboardHidden"></activity>
+        <activity android:name=".ChangePhotoActivity"
+            			android:configChanges="orientation|keyboardHidden"></activity>
+        <activity android:name=".GMapsActivity"
+            			android:theme="@android:style/Theme.NoTitleBar"
+            			android:configChanges="orientation|keyboardHidden"></activity>
+        <activity android:name=".ChatListActivity"
+            			android:configChanges="orientation|keyboardHidden"></activity>
+        <activity android:name=".ChatActivity"
+            			android:configChanges="orientation|keyboardHidden"></activity>
+        <activity android:name=".SynchActivity"
+            			android:configChanges="orientation|keyboardHidden"></activity>
+        <activity android:name=".ConfirmActivity"
+            			android:configChanges="orientation|keyboardHidden"></activity>
     </application>
 
 </manifest>

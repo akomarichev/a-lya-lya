@@ -38,6 +38,27 @@ public class Pref {
 		final Editor editor=prefs.edit();
 		return prefs.getBoolean(DB_FRIENDS, false);
 	}    
+	
+    // FRIENDS DB
+	public static void setLoadedDialogDB(Context c){
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+        Editor editor=prefs.edit();
+        editor.putBoolean(DB_FRIENDS, true);
+        editor.commit();
+	}
+	
+    public static void cancelLoadedDialogDB(Context c){
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+        Editor editor=prefs.edit();
+        editor.putBoolean(DB_FRIENDS, false);
+        editor.commit();
+	}
+    
+	public static Boolean loadedDialogDB(Context c){
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+		final Editor editor=prefs.edit();
+		return prefs.getBoolean(DB_FRIENDS, false);
+	}    
 
     // DB_CONVERSATIONS
 	public static void setLoadedConversationsDB(Context c){

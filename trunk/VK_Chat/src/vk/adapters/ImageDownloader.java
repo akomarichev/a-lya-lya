@@ -11,10 +11,16 @@ import org.apache.http.client.methods.HttpGet;
 import vk.chat.R;
 
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
+import android.graphics.Paint;
+import android.graphics.PorterDuff.Mode;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -102,7 +108,7 @@ public class ImageDownloader {
                 BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
                 // Change bitmap only if this process is still associated with it
                 if (this == bitmapDownloaderTask) {
-                	imageView.setBackgroundDrawable(new BitmapDrawable(bitmap));
+                	imageView.setBackgroundDrawable(new BitmapDrawable(getRoundedCornerImage(bitmap)));
                 }
             }
         }
@@ -145,4 +151,27 @@ public class ImageDownloader {
             return null;
         }
     }
+    
+  public static Bitmap getRoundedCornerImage(Bitmap bitmap) {
+	Bitmap output = Bitmap.createBitmap(bitmap.getWidth(),
+	    bitmap.getHeight(), Config.ARGB_8888);
+	Canvas canvas = new Canvas(output);
+
+	final int color = 0xff424242;
+	final Paint paint = new Paint();
+	final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+	final RectF rectF = new RectF(rect);
+	final float roundPx = 5;
+
+	paint.setAntiAlias(true);
+	canvas.drawARGB(0, 0, 0, 0);
+	paint.setColor(color);
+	canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
+
+	paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
+	canvas.drawBitmap(bitmap, rect, rect, paint);
+
+	return output;
+
+	}
 }

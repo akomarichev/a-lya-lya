@@ -9,7 +9,7 @@ import org.json.JSONException;
 import vk.api.API;
 import vk.api.Message;
 import vk.api.User;
-import vk.chat.ChatActivity;
+import vk.chat.ChatListActivity;
 import vk.chat.ConversationsActivity;
 import vk.chat.FriendsActivity;
 import vk.chat.R;
@@ -25,12 +25,14 @@ import vk.utils.WorkWithTimeAndDate;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 public class ConversationsAdapter extends ArrayAdapter<Message> {	
@@ -126,25 +128,78 @@ public class ConversationsAdapter extends ArrayAdapter<Message> {
 					viewHolderChat.image_ava4 = (ImageView) convertView.findViewById(R.id.iv_ava_4);
 					convertView.setTag(viewHolderChat);
 					
-					convertView.post(new Runnable(){
+					
+					new AsyncTask<Context, Void, Void>() {
+
 				        @Override
-				        public void run() {
+				        protected Void doInBackground(Context... params) {
 				        	try {
 		    					chat_users = api.getChatUsers(values[position].chat_id);
-		                } catch (Exception e) {
-		                    e.printStackTrace();
-		                }
-		                viewHolderChat.image_ava1.setTag(chat_users.get(0).photo_rec);
-				        loader.download(chat_users.get(0).photo_rec, viewHolderChat.image_ava1);
-				        viewHolderChat.image_ava2.setTag(chat_users.get(1).photo_rec);
-				        loader.download(chat_users.get(1).photo_rec, viewHolderChat.image_ava2);
-				        viewHolderChat.image_ava3.setTag(chat_users.get(2).photo_rec);
-				        loader.download(chat_users.get(2).photo_rec, viewHolderChat.image_ava3);
-				        viewHolderChat.image_ava4.setTag(chat_users.get(3).photo_rec);
-				        loader.download(chat_users.get(3).photo_rec, viewHolderChat.image_ava4);
-				        notifyDataSetChanged();
-				        }
-				    });
+			                } catch (Exception e) {
+			                    e.printStackTrace();
+			                }	
+				                return null;
+				            } 
+				        
+				            @Override
+				            public void onPostExecute(Void result){
+				            	
+				            	Log.d("conversations","chat");
+				            	if(chat_users.size() >=4){
+				            		viewHolderChat.image_ava1.setVisibility(View.VISIBLE);
+							        viewHolderChat.image_ava2.setVisibility(View.VISIBLE);
+							        viewHolderChat.image_ava3.setVisibility(View.VISIBLE);
+							        viewHolderChat.image_ava4.setVisibility(View.VISIBLE);
+					                viewHolderChat.image_ava1.setTag(chat_users.get(0).photo_rec);
+							        loader.download(chat_users.get(0).photo_rec, viewHolderChat.image_ava1);
+							        viewHolderChat.image_ava2.setTag(chat_users.get(1).photo_rec);
+							        loader.download(chat_users.get(1).photo_rec, viewHolderChat.image_ava2);
+							        viewHolderChat.image_ava3.setTag(chat_users.get(2).photo_rec);
+							        loader.download(chat_users.get(2).photo_rec, viewHolderChat.image_ava3);
+							        viewHolderChat.image_ava4.setTag(chat_users.get(3).photo_rec);
+							        loader.download(chat_users.get(3).photo_rec, viewHolderChat.image_ava4);
+				            	}
+				            	else if(chat_users.size() == 3){
+				            		viewHolderChat.image_ava1.setVisibility(View.VISIBLE);
+							        viewHolderChat.image_ava2.setVisibility(View.VISIBLE);
+							        viewHolderChat.image_ava3.setVisibility(View.VISIBLE);
+					                viewHolderChat.image_ava1.setTag(chat_users.get(0).photo_rec);
+							        loader.download(chat_users.get(0).photo_rec, viewHolderChat.image_ava1);
+							        viewHolderChat.image_ava2.setTag(chat_users.get(1).photo_rec);
+							        loader.download(chat_users.get(1).photo_rec, viewHolderChat.image_ava2);
+							        viewHolderChat.image_ava3.setTag(chat_users.get(2).photo_rec);
+							        loader.download(chat_users.get(2).photo_rec, viewHolderChat.image_ava3);
+							        viewHolderChat.image_ava4.setVisibility(View.GONE);
+				            	}
+				            	else if(chat_users.size() == 2){
+				            		viewHolderChat.image_ava1.setVisibility(View.VISIBLE);
+							        viewHolderChat.image_ava2.setVisibility(View.VISIBLE);
+					                viewHolderChat.image_ava1.setTag(chat_users.get(0).photo_rec);
+							        loader.download(chat_users.get(0).photo_rec, viewHolderChat.image_ava1);
+							        viewHolderChat.image_ava2.setTag(chat_users.get(1).photo_rec);
+							        loader.download(chat_users.get(1).photo_rec, viewHolderChat.image_ava2);
+							        viewHolderChat.image_ava3.setVisibility(View.GONE);
+							        viewHolderChat.image_ava4.setVisibility(View.GONE);
+				            	}
+				            	else if(chat_users.size() == 1){
+				            		viewHolderChat.image_ava1.setVisibility(View.VISIBLE);
+					                viewHolderChat.image_ava1.setTag(chat_users.get(0).photo_rec);
+							        loader.download(chat_users.get(0).photo_rec, viewHolderChat.image_ava1);
+							        viewHolderChat.image_ava2.setVisibility(View.GONE);
+							        viewHolderChat.image_ava3.setVisibility(View.GONE);
+							        viewHolderChat.image_ava4.setVisibility(View.GONE);
+				            	}
+				            	else{
+				            		viewHolderChat.image_ava1.setVisibility(View.GONE);
+							        viewHolderChat.image_ava2.setVisibility(View.GONE);
+							        viewHolderChat.image_ava3.setVisibility(View.GONE);
+							        viewHolderChat.image_ava4.setVisibility(View.GONE);
+				            	}
+				            }
+				       }.execute();
+					
+					
+					
 									
 				//} else {
 				//		viewHolderChat = (ViewHolderChat) convertView.getTag();

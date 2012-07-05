@@ -7,9 +7,13 @@ import java.util.Map;
 
 import vk.api.Attachment;
 import vk.api.Audio;
+import vk.api.ForwardMessages;
 import vk.api.Message;
 import vk.chat.R;
 import vk.dialog.AudioViewer;
+import vk.dialog.ForwardMessageViewer;
+import vk.dialog.PhotoViewer;
+import vk.utils.WorkWithTimeAndDate;
 import android.content.Context;
 import android.graphics.Color;
 import android.media.AudioManager;
@@ -31,7 +35,7 @@ import android.widget.TextView;
 
 public class DialogAdapter extends ArrayAdapter<Message> {
 
-	
+
 	
 		private ArrayList<Integer> checkedItems;
 		private static final String TAG = "DialogAdapter";
@@ -44,6 +48,8 @@ public class DialogAdapter extends ArrayAdapter<Message> {
 	    private LinearLayout wrapper;
 	    public static int last;
 	    public static Button b;
+	    
+	    static int k = 0;
 	    //public ImageDownloader loader;
 	    
 	    class ViewHolder {
@@ -55,6 +61,10 @@ public class DialogAdapter extends ArrayAdapter<Message> {
 			//public ImageView image_ava;
 			//public ImageView image_online;
 		}
+	    
+	    static class ViewHolderAudio{
+	    	public View audio;		
+	    }
 
 	    public DialogAdapter(Context context, Message[] objects, ArrayList<Integer> list) {
 	        super(context, R.layout.listitem_dialog, objects);
@@ -73,12 +83,12 @@ public class DialogAdapter extends ArrayAdapter<Message> {
 			viewHolder.text = (TextView) convertView.findViewById(R.id.iv_itemlist_dialog);
 			
 			viewHolder.wrapper = (LinearLayout) convertView.findViewById(R.id.wrapper2);	
-			//viewHolder.wrapper_right = (LinearLayout) convertView.findViewById(R.id.wrapper3);
+			viewHolder.wrapper_right = (LinearLayout) convertView.findViewById(R.id.wrapper3);
 			viewHolder.time_left = (TextView) convertView.findViewById(R.id.iv_itemlist_time_left);
 			viewHolder.time_right = (TextView) convertView.findViewById(R.id.iv_itemlist_time_right);
 			
 	        viewHolder.text.setText(values[position].body);
-	        LayoutParams lpView = (LayoutParams) viewHolder.wrapper.getLayoutParams();
+	        LayoutParams lpView = (LayoutParams) viewHolder.wrapper_right.getLayoutParams();
 	        lpView.gravity = values[position].is_out ? Gravity.RIGHT : Gravity.LEFT;
 	        lpView.height = LayoutParams.WRAP_CONTENT;
 	        lpView.width = LayoutParams.WRAP_CONTENT;
@@ -89,30 +99,38 @@ public class DialogAdapter extends ArrayAdapter<Message> {
 	        lpView.width = LayoutParams.WRAP_CONTENT;*/
 	        
 	        if(values[position].is_out){
-	        	lpView.leftMargin = 10;
-	        	viewHolder.time_right.setVisibility(View.GONE);
 	        	viewHolder.time_left.setVisibility(View.VISIBLE);
+	        	viewHolder.time_left.setText(WorkWithTimeAndDate.getTime(values[position].date, context));	        	
+	        	//viewHolder.time_left.set
+	        	viewHolder.time_right.setVisibility(View.GONE);
+	        	
+	        	//lpView.leftMargin = 30;
+	        	//lpView.rightMargin = 0;
 	        }else{
-	        	lpView.rightMargin = 60;
 	        	viewHolder.time_left.setVisibility(View.GONE);
 	        	viewHolder.time_right.setVisibility(View.VISIBLE);
+	        	viewHolder.time_right.setText(WorkWithTimeAndDate.getTime(values[position].date, context));
+	        	//lpView.rightMargin = 30;
+	        	//lpView.leftMargin = 0;
 	        }
-	        viewHolder.wrapper.setLayoutParams(lpView);
 	        //viewHolder.wrapper_right.setLayoutParams(lpView3);
+	        viewHolder.wrapper_right.setLayoutParams(lpView);
+	        //
 	        viewHolder.wrapper.setBackgroundResource(values[position].is_out ? R.drawable.dialog_msgout : R.drawable.dialog_msgin_inbox);
-	        
-	        if(checkedItems.contains((Integer) position)){
+	        if(checkedItems.contains((Integer) position)){	        	
 	        	viewHolder.wrapper.setBackgroundResource(values[position].is_out ? R.drawable.dialog_msgout_selected : R.drawable.dialog_msgin_selected);
+	        	viewHolder.text.setTextColor(context.getResources().getColor(R.color.white_color));
 	        }
 	        
 	        
-	        viewHolder.wrapper.setOnClickListener(new OnClickListener() {				
+	        /*viewHolder.wrapper.setOnClickListener(new OnClickListener() {				
 				@Override
 				public void onClick(View v) {
-					checkedItems.add(position);
-					viewHolder.wrapper.setBackgroundResource(values[position].is_out ? R.drawable.dialog_msgout_selected : R.drawable.dialog_msgin_selected);
+					Log.d("audio","pressed");
+					//checkedItems.add(position);
+					//viewHolder.wrapper.setBackgroundResource(values[position].is_out ? R.drawable.dialog_msgout_selected : R.drawable.dialog_msgin_selected);
 				}
-			});
+			});*/
 	        
 	        //b.setText("Hello!");
 	        
@@ -121,11 +139,26 @@ public class DialogAdapter extends ArrayAdapter<Message> {
 	        	Log.d(TAG, "attachments");
 				for(Attachment att:values[position].attachments){
 					if(att.type.equals("photo")){
+						viewHolder.wrapper.addView(new PhotoViewer().getPhoto(parent, att, inflater));
 						
 					}
 					
 					if(att.type.equals("audio")){
-						viewHolder.wrapper.addView(new AudioViewer().getAudio(parent, att, inflater));	
+						//ViewHolderAudio viewHolderAudio = new ViewHolderAudio();
+//						if(k==0){
+//							viewHolderAudio.audio = new AudioViewer().getAudio(parent, att, inflater);
+//							convertView.setTag(viewHolderAudio);
+//							k = position;
+//							Log.d("audio","if");
+//						}
+//						else{
+//							viewHolderAudio = (ViewHolderAudio) convertView.getTag();
+//							Log.d("audio","else");
+//						}
+//							//audio = (View) convertView.findViewWithTag(position);		
+//						if(viewHolderAudio != null)
+//							viewHolder.wrapper.addView(viewHolderAudio.audio);
+						viewHolder.wrapper.addView(new AudioViewer().getAudio(parent, att, inflater, this));
 					}
 					
 					if(att.type.equals("video")){						
@@ -133,6 +166,12 @@ public class DialogAdapter extends ArrayAdapter<Message> {
 					}
 				}			
 			}	        
+	        
+	        if(values[position].f_msgs != null){
+	        	Log.d(TAG, "attachments");
+				for(ForwardMessages att:values[position].f_msgs)
+					viewHolder.wrapper.addView(new ForwardMessageViewer().getForwardMessage(parent, inflater, att, context));		
+			}	       
 	        return convertView;
 	    }  
 	    

@@ -5,6 +5,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.util.Log;
+
 public class Message {
     public String date;
     public long uid;
@@ -16,6 +18,7 @@ public class Message {
     public String read_state;
     public boolean is_out;
     public ArrayList<Attachment> attachments=new ArrayList<Attachment>();
+    public ArrayList<ForwardMessages> f_msgs = new ArrayList<ForwardMessages>();
     public Long chat_id;
 
     public static Message parse(JSONObject o, boolean from_history, long history_uid, boolean from_chat) throws NumberFormatException, JSONException{
@@ -45,6 +48,14 @@ public class Message {
         JSONArray attachments=o.optJSONArray("attachments");
         if(attachments!=null)
             m.attachments=Attachment.parseAttachments(attachments, 0, 0);
+        
+        JSONArray f_messages=o.optJSONArray("fwd_messages");
+        if(f_messages!=null){
+        	//Log.d("Message", o.toString());
+        	//Log.d("Message", f_messages.toString());
+            m.f_msgs=ForwardMessages.parseForwardMessages(f_messages);
+            Log.d("Message", m.f_msgs.toString());           
+        }
         return m;
     }
 

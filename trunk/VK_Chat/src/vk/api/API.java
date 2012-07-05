@@ -15,7 +15,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.codec.binary.Hex;
@@ -411,6 +413,7 @@ public class API {
             params.put("count", count);
         //JSONObject root = SendHttpPost(params);
         JSONObject root = sendRequest(params);
+        Log.d("messages.getHistory", root.toString());
         JSONArray array = root.optJSONArray("response");
         ArrayList<Message> messages = parseMessages(array, chat_id<=0, uid, chat_id>0);
         return messages;
@@ -463,25 +466,7 @@ public class API {
         return res;
     }
     
-    public ArrayList<User> getChatUsers(Long chat_id) throws MalformedURLException, IOException, JSONException{
-        Params params = new Params("messages.getChatUsers");
-        params.put("chat_id", chat_id);
-        params.put("fields", "photo_rec,online");
-        
-        JSONObject root = sendRequest(params);
-        ArrayList<User> users=new ArrayList<User>();
-        JSONArray array=root.optJSONArray("response");
-        //if there are no friends "response" will not be array
-        if(array==null)
-            return users;
-        int category_count=array.length();
-        for(int i=0; i<category_count; ++i){
-            JSONObject o = (JSONObject)array.get(i);
-            User u = User.parse(o);
-            users.add(u);
-        }
-        return users;
-    }
+
     
     public ArrayList<User> getUsersByPhones(String phones) throws MalformedURLException, IOException, JSONException{
         Params params = new Params("friends.getByPhones");
@@ -642,6 +627,168 @@ public class API {
     	String url = "http://"+server+"?act=a_check&key="+key+"&ts="+ts+"&wait=25&mode=2";
     	Log.d("QWE", url);
     	getLongPollInternal(url);
+    }
+    
+    // работа с сообщениями 
+    public String sendMessage(Long uid, long chat_id, String message, String title, String type, String attachments, String forwarded_messages) throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("messages.send");
+        if(chat_id<=0)
+            params.put("uid", uid);
+        else
+            params.put("chat_id", chat_id);
+        params.put("message", message);
+        params.put("title", title);
+        params.put("type", type);
+        if(forwarded_messages!=null)
+        	params.put("forward_messages", forwarded_messages);
+        if(attachments !=null) 
+            params.put("attachment", attachments);
+        //addCaptchaParams(captcha_key, captcha_sid, params);
+        JSONObject root = sendRequest(params);
+        Object message_id = root.opt("response");
+        if (message_id != null)
+            return String.valueOf(message_id);
+        return null;
+    }
+    
+    public String deleteMessage(String mids) throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("messages.delete");
+        params.put("mids", mids);
+        JSONObject root = sendRequest(params);
+        Log.d("delete.messages", root.toString());
+        Object response_code = root.opt("response");
+        if (response_code != null)
+            return String.valueOf(response_code);
+        return null;
+    }
+    
+    public int deleteMessageThread(Long uid, Long chatId) throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("messages.deleteDialog");
+        params.put("uid", uid);
+        params.put("chat_id", chatId);
+        JSONObject root = sendRequest(params);
+        return root.getInt("response");
+    }
+    
+    <T> String arrayToString(ArrayList<T> items) {
+        if(items==null)
+            return null;
+        String str_cids = "";
+        for (Object item:items){
+            if(str_cids.length()!=0)
+                str_cids+=',';
+            str_cids+=item;
+        }
+        return str_cids;
+    }
+    
+    public String markAsNewOrAsRead(ArrayList<Long> mids, boolean as_read) throws MalformedURLException, IOException, JSONException{
+        if (mids == null || mids.size() == 0)
+            return null;
+        Params params;
+        if (as_read)
+            params = new Params("messages.markAsRead");
+        else
+            params = new Params("messages.markAsNew");
+        params.put("mids", arrayToString(mids));
+        JSONObject root = sendRequest(params);
+        Object response_code = root.opt("response");
+        if (response_code != null)
+            return String.valueOf(response_code);
+        return null;
+    }
+    
+    public String photosGetMessagesUploadServer() throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("photos.getMessagesUploadServer");
+        //JSONObject root = SendHttpPost(params);
+        JSONObject root = sendRequest(params);
+        JSONObject response = root.getJSONObject("response");
+        return response.getString("upload_url");
+    }
+    
+    public String saveMessagesPhoto(String server, String photo, String hash) throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("photos.saveMessagesPhoto");
+        params.put("server",server);
+        params.put("photo",photo);
+        params.put("hash",hash);
+        JSONObject root = sendRequest(params);
+        Log.d("photos.saveMessagesPhoto",root.toString());
+        
+        JSONArray array=root.optJSONArray("response");
+        //if there are no friends "response" will not be array
+        if(array==null)
+            return null;
+        else{
+            JSONObject o = (JSONObject)array.get(0);
+            String id = o.optString("id");
+            return id;
+        }
+    }
+    
+    public ArrayList<User> getUsers(String uids) throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("users.get");
+        String fields="first_name,last_name,photo_rec,online,contacts";
+        params.put("fields",fields);
+        params.put("uids",uids);
+
+        JSONObject root = sendRequest(params);
+        ArrayList<User> users=new ArrayList<User>();
+        JSONArray array=root.optJSONArray("response");
+        //if there are no friends "response" will not be array
+        if(array==null)
+            return users;
+        int category_count=array.length();
+        for(int i=0; i<category_count; ++i){
+            JSONObject o = (JSONObject)array.get(i);
+            User u = User.parse(o);
+            users.add(u);
+        }
+        return users;
+    }
+    
+    // work with chats
+    public ArrayList<User> getChatUsers(Long chat_id) throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("messages.getChatUsers");
+        params.put("chat_id", chat_id);
+        params.put("fields", "photo_rec,online");
+        
+        JSONObject root = sendRequest(params);
+        ArrayList<User> users=new ArrayList<User>();
+        JSONArray array=root.optJSONArray("response");
+        //if there are no friends "response" will not be array
+        if(array==null)
+            return users;
+        int category_count=array.length();
+        for(int i=0; i<category_count; ++i){
+            JSONObject o = (JSONObject)array.get(i);
+            User u = User.parse(o);
+            users.add(u);
+        }
+        return users;
+    }
+    
+    public String removeChatUser(Long chat_id, Long uid) throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("messages.removeChatUser");
+        params.put("chat_id", chat_id);
+        params.put("uid", uid);       
+        JSONObject root = sendRequest(params);
+        return root.getString("response");
+    }
+    
+    public String editChat(Long chat_id, String title) throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("messages.editChat");
+        params.put("chat_id", chat_id);
+        params.put("title", title);       
+        JSONObject root = sendRequest(params);
+        return root.getString("response");
+    }
+    
+    public String addChatUser(Long chat_id, Long uid) throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("messages.addChatUser");
+        params.put("chat_id", chat_id);
+        params.put("uid", uid);       
+        JSONObject root = sendRequest(params);
+        return root.getString("response");
     }
     
 }
