@@ -26,4 +26,8 @@ public class User {
             u.mobile_phone = o.optString("mobile_phone");
         return u;
     }
+    
+    public String getFullName(){
+    	return first_name + " " + last_name;
+    }
 }

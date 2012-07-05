@@ -1,6 +1,7 @@
 package vk.chat;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import vk.adapters.MySimpleArrayAdapterFast;
 import vk.api.API;
@@ -8,16 +9,20 @@ import vk.api.User;
 import vk.constants.Constants;
 import vk.db.datasource.FriendsDataSource;
 import vk.pref.Pref;
+import vk.utils.UserFullNameComparator;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
@@ -28,6 +33,13 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 public class FriendsActivity extends Activity implements OnScrollListener{
+	
+	private static final int FORWARD_MESSAGES = 1;
+	
+	private String forwarded_messages = null;
+	//private static final int PICK_FROM_FILE = 2;
+	//private static final int PICK_LOCATION = 3;
+	
 	private ArrayList<User> friends;
 	private ArrayList<User> friends_db;
 	private static int max;
@@ -37,6 +49,8 @@ public class FriendsActivity extends Activity implements OnScrollListener{
 	static ListView listView;
 	MySimpleArrayAdapterFast adapter;
 	private FriendsDataSource db_friends;
+	
+	private static String lastLetter;
 	
 
 	/** Called when the activity is first created. */
@@ -50,12 +64,19 @@ public class FriendsActivity extends Activity implements OnScrollListener{
 	    db_friends = new FriendsDataSource(this);
 	    db_friends.open();
 	    
+	    
+	    
+	    listView = (ListView)findViewById(R.id.list);
+	    listView.setOnItemClickListener(clickDilog);
+	    
+	    checkExtras();
+	    
 	    new AsyncTask<Context, Void, Void>() {
 
 	        @Override
 	        protected Void doInBackground(Context... params) {
 		            API api = new API(Pref.getAccessTokenHTTPS(FriendsActivity.this)); 
-		            
+
 		            //Pref.cancelLoadedFriendsDB(FriendsActivity.this);
 		            
 		            if(!Pref.loadedFriendsDB(FriendsActivity.this)){
@@ -65,19 +86,20 @@ public class FriendsActivity extends Activity implements OnScrollListener{
 			    			e.printStackTrace();
 			    		}
 		            	db_friends.removeAll();
-		            	loadFriendDb(friends);
+		            	friends_db = new ArrayList<User>(friends);
+		            	loadFriendDb(friends_db);
 		            }
 		            else{
 		            	friends = db_friends.getAllFriends();
 		            	db_friends.close();
 		            }
 		            	
-		            Log.d("FriendsActivity.this", friends.toString());
+		            //Log.d("FriendsActivity.this", friends.toString());
 	            	            
-		            max = friends.size();
+		            
 		            
 		           	
-		            listView = (ListView)findViewById(R.id.list);
+		            
 		            //u = new User[friends.size()];
 		            /*Integer max_friends;
 		            if(max > UPDATE_LIST)
@@ -85,11 +107,39 @@ public class FriendsActivity extends Activity implements OnScrollListener{
 		            else
 		            	max_friends = max;*/
 		            
-		            u = new User[max];
+		            u = new User[friends.size()];
+		            
+		            // добавка избранных друзей 5 штук
+		            for(int i = 0; i<5; i++ ){
+		    			//currentPosition += 1;
+		    			u[i]=friends.get(0);
+		    			friends.remove(0);
+		    		}		
+		            
+		            // сортируем оставшихся друзей
+		            Collections.sort(friends, new UserFullNameComparator());
+		            
+		            // добавляем отсортированных друзей.
+		            max = friends.size();
+		            
 		    		for(int i = 0; i<max; i++ ){
 		    			//currentPosition += 1;
-		    			u[i]=friends.get(i);	
+		    			u[i+5]=friends.get(i);	
 		    		}		    	
+		    		
+		    		// добавляем разделители
+		    		max = friends.size()+5;
+		    		for(int i = 0; i<max; i++){
+			    		if(i >= 5){
+			    	        String letter = Character.toString(u[i].first_name.charAt(0)).toUpperCase();
+			    	        if(!letter.equals(lastLetter)){
+			    	        	MySimpleArrayAdapterFast.letter_buffer.put(i, letter);
+			    			    lastLetter = letter;
+			    	        }
+			    		}
+		    		}
+		    		
+		    		
 	                return null;
 	            } 
 	        
@@ -98,13 +148,8 @@ public class FriendsActivity extends Activity implements OnScrollListener{
 	                handler.post(new Runnable(){
 	                     @Override
 	                     public void run(){
-	     		             Log.d("Friends", u.toString());
-	     		            
 	     		            adapter = new MySimpleArrayAdapterFast(getApplicationContext(), u);
-	     				   listView.setAdapter(adapter);
-	     				   
-	     			       //adapter.notifyDataSetChanged();
-	     			       
+	     		            listView.setAdapter(adapter);
 	                     }
 	                });
 	            }
@@ -130,6 +175,27 @@ public class FriendsActivity extends Activity implements OnScrollListener{
 			}
 		});*/
 	}
+	
+	private OnItemClickListener clickDilog=new OnItemClickListener(){
+
+		@Override
+		public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+			User friend = new User();
+			friend = u[position];
+				
+			Intent intent = new Intent(FriendsActivity.this, DialogActivity.class);
+			intent.putExtra("uid", friend.uid);
+			intent.putExtra("type", "uid");
+			if(forwarded_messages!=null){
+				intent.putExtra("f_msgs", forwarded_messages);
+				startActivity(intent);
+				finish();
+			}
+			else
+				startActivity(intent);
+		}		
+	};
+	
 	
 	void addMoreDataToList() {
 		int max_friends;
@@ -192,5 +258,16 @@ public class FriendsActivity extends Activity implements OnScrollListener{
             }
         }.start();
     }
+	
+	protected void checkExtras() {
+		Intent i = getIntent();
+		Bundle extras = getIntent().getExtras();
+		if(i.hasExtra("f_msgs")){
+			forwarded_messages = extras.getString("f_msgs");
+			Toast.makeText(getApplicationContext(), forwarded_messages.toString(), Toast.LENGTH_LONG).show();
+		}
+		else
+			Toast.makeText(getApplicationContext(), "Not forwarded messages", Toast.LENGTH_LONG).show();
+	}
 
 }

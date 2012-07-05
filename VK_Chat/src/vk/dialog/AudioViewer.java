@@ -2,20 +2,24 @@ package vk.dialog;
 
 import java.util.ArrayList;
 
+import vk.adapters.DialogAdapter;
 import vk.api.Attachment;
 import vk.api.Audio;
 import vk.chat.R;
+import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -24,31 +28,52 @@ public class AudioViewer implements OnClickListener, OnTouchListener, OnCompleti
 	/* Audio */
 	private Audio audio;
 	private ImageView play_image;
-	private MediaPlayer mediaPlayer;
-	private SeekBar seekBar;
+	public MediaPlayer mediaPlayer;
+	public SeekBar seekBar;
+	public static SeekBar static_seekBar; 
+	public static Long isPlaying = 0L; 
+	public static MediaPlayer playingMediaPlayer;
+	public ArrayAdapter adapter;
+	
+	public static int progress;
+	
 	private TextView tv_artist;
 	private TextView tv_song;
 	
 	private final Handler handler = new Handler();
-	private int mediaFileLengthInMilliseconds;
+	private static int mediaFileLengthInMilliseconds;
 	
-	public View getAudio(ViewGroup parent, Attachment att, LayoutInflater inflater){
+	public View getAudio(ViewGroup parent, Attachment att, LayoutInflater inflater, ArrayAdapter adapter){
     	View rowViewAudio = inflater.inflate(R.layout.audio, parent, false);
     	audio = new Audio();
     	audio = att.audio;
+    	this.adapter = adapter;
     	//initViewAudio(rowViewAudio, att);
     	//initMediaPlayer();	
-    	initView(rowViewAudio);
+    	//
+    		initView(rowViewAudio);
+    	//}
 		return rowViewAudio;	    	
     }
 	
 	private void initView(View rowViewAudio) {
 		play_image = (ImageView) rowViewAudio.findViewById(R.id.audio_play);
 		play_image.setOnClickListener(this);
+		if(isPlaying == audio.aid){
+			Log.d("isPlaying","pressed");
+			if(playingMediaPlayer.isPlaying()){
+				play_image.setImageResource(R.drawable.audio_pause);
+			}else {
+				play_image.setImageResource(R.drawable.audio_play);
+			}
+		}
+		else 
+			play_image.setImageResource(R.drawable.audio_play);
 		
-		seekBar = (SeekBar)rowViewAudio.findViewById(R.id.seekBar);	
+		seekBar = (SeekBar)rowViewAudio.findViewById(R.id.seekBar);
 		seekBar.setMax(99); // It means 100% .0-99
 		seekBar.setOnTouchListener(this);
+		
 		
 		tv_artist = (TextView) rowViewAudio.findViewById(R.id.audio_artist);
 		tv_song = (TextView) rowViewAudio.findViewById(R.id.audio_song);		
@@ -56,28 +81,99 @@ public class AudioViewer implements OnClickListener, OnTouchListener, OnCompleti
 		tv_artist.setText(audio.artist);
 		tv_song.setText(audio.title);
 		
-		mediaPlayer = new MediaPlayer();
-		mediaPlayer.setOnBufferingUpdateListener(this);
-		mediaPlayer.setOnCompletionListener(this);
+		initMediaFirst();
+		
+		//adapter.notifyDataSetChanged();
+		
+	}
+	
+	private void initMediaFirst(){
+		if(isPlaying == 0L || isPlaying != audio.aid){
+			if(playingMediaPlayer != null)
+				mediaPlayer = playingMediaPlayer;
+			else{
+	    		mediaPlayer = new MediaPlayer();
+	    		playingMediaPlayer = mediaPlayer;
+	    		playingMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+	    		playingMediaPlayer.setOnBufferingUpdateListener(this);
+	    		playingMediaPlayer.setOnCompletionListener(this);
+	    		
+	    		static_seekBar = seekBar;
+			}
+		}
+    	else {
+			mediaPlayer = playingMediaPlayer;
+			seekBar = static_seekBar;
+			//mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+    		//mediaPlayer.setOnBufferingUpdateListener(this);
+    		//mediaPlayer.setOnCompletionListener(this);
+    	}
+		
+	}
+	
+	private void initMedia(){
+		if(isPlaying == 0L || audio.aid != isPlaying){
+//    		//if(playingMediaPlayer != null)
+//    			playingMediaPlayer.reset();
+//
+//    		mediaPlayer = new MediaPlayer();
+//    		mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+//    		mediaPlayer.setOnBufferingUpdateListener(this);
+//    		mediaPlayer.setOnCompletionListener(this);
+//    		playingMediaPlayer = mediaPlayer;
+			if(playingMediaPlayer != null){
+				playingMediaPlayer.reset();
+			}
+	    		mediaPlayer = new MediaPlayer();
+	    		playingMediaPlayer = mediaPlayer;
+	    		playingMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+	    		playingMediaPlayer.setOnBufferingUpdateListener(this);
+	    		playingMediaPlayer.setOnCompletionListener(this);
+	    		
+	    		static_seekBar = seekBar;
+		}
+		else{
+			mediaPlayer = playingMediaPlayer;
+			seekBar = static_seekBar;
+		}
+		//seekBar = static_seekBar;	
+    		//seekBar.setMax(99); // It means 100% .0-99
+    		//seekBar.setOnTouchListener(this);
+    			
 	}
 
 	/** Method which updates the SeekBar primary progress by current song playing position*/
     private void primarySeekBarProgressUpdater() {
-    	seekBar.setProgress((int)(((float)mediaPlayer.getCurrentPosition()/mediaFileLengthInMilliseconds)*100)); // This math construction give a percentage of "was playing"/"song length"
+    	//initMedia();
+    	//if(audio.aid == isPlaying)
+			//mediaPlayer = playingMediaPlayer;
+    	if(audio.aid == isPlaying){
+    		mediaPlayer = playingMediaPlayer;
+    		seekBar = static_seekBar;
+    	progress = (int)(((float)mediaPlayer.getCurrentPosition()/mediaFileLengthInMilliseconds)*100);
+    	seekBar.setProgress(progress); // This math construction give a percentage of "was playing"/"song length"
 		if (mediaPlayer.isPlaying()) {
 			Runnable notification = new Runnable() {
 		        public void run() {
 		        	primarySeekBarProgressUpdater();
 				}
 		    };
-		    handler.postDelayed(notification,1000);
+		    handler.postDelayed(notification,300);
+    	}
     	}
     }
 
 	@Override
 	public void onClick(View v) {
+		//Log.d("audioclick","pressed");
+		static_seekBar=seekBar;
+		if(isPlaying == 0L || audio.aid != isPlaying){
+			initMedia();
+			isPlaying = audio.aid;			
+		}
+		//adapter.notifyDataSetChanged();
 		if(v.getId() == R.id.audio_play){
-			 /** ImageButton onClick event handler. Method which start/pause mediaplayer playing */
+			 /** ImageButton onClick event handler. Method which start/pause mediaplayer playing */			
 			try {
 				mediaPlayer.setDataSource(audio.url); // setup song from http://www.hrupin.com/wp-content/uploads/mp3/testsong_20_sec.mp3 URL to mediaplayer data source
 				mediaPlayer.prepare(); // you must call this method after setup the datasource in setDataSource method. After calling prepare() the instance of MediaPlayer starts load data from URL to internal buffer. 
@@ -94,19 +190,26 @@ public class AudioViewer implements OnClickListener, OnTouchListener, OnCompleti
 				mediaPlayer.pause();
 				play_image.setImageResource(R.drawable.audio_play);
 			}
-			
+			//playingMediaPlayer = mediaPlayer;
+			adapter.notifyDataSetChanged();
 			primarySeekBarProgressUpdater();
 		}
 	}
 
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
-		if(v.getId() == R.id.seekBar){
-			/** Seekbar onTouch event handler. Method which seeks MediaPlayer to seekBar primary progress position*/
-			if(mediaPlayer.isPlaying()){
-		    	SeekBar sb = (SeekBar)v;
-				int playPositionInMillisecconds = (mediaFileLengthInMilliseconds / 100) * sb.getProgress();
-				mediaPlayer.seekTo(playPositionInMillisecconds);
+		//Log.d("audiotouch","pressed");
+		//initMedia();
+		if(audio.aid == isPlaying){
+			seekBar = static_seekBar;
+    		mediaPlayer = playingMediaPlayer;
+			if(v.getId() == R.id.seekBar){
+				/** Seekbar onTouch event handler. Method which seeks MediaPlayer to seekBar primary progress position*/
+				if(mediaPlayer.isPlaying()){
+			    	SeekBar sb = (SeekBar)v;
+					int playPositionInMillisecconds = (mediaFileLengthInMilliseconds / 100) * sb.getProgress();
+					mediaPlayer.seekTo(playPositionInMillisecconds);
+				}
 			}
 		}
 		return false;
@@ -114,13 +217,19 @@ public class AudioViewer implements OnClickListener, OnTouchListener, OnCompleti
 
 	@Override
 	public void onCompletion(MediaPlayer mp) {
+		//Log.d("audiocom","pressed");
 		 /** MediaPlayer onCompletion event handler. Method which calls then song playing is complete*/
+		//initMedia();
 		play_image.setImageResource(R.drawable.audio_play);
-		mediaPlayer.reset();
+    	if(playingMediaPlayer != null)
+    		playingMediaPlayer.reset();
+    	adapter.notifyDataSetChanged();
+		//mediaPlayer.reset();
 	}
 
 	@Override
 	public void onBufferingUpdate(MediaPlayer mp, int percent) {
+		//Log.d("audiobuf","pressed");
 		/** Method which updates the SeekBar secondary progress by current song loading from URL position*/
 		seekBar.setSecondaryProgress(percent);
 	}
