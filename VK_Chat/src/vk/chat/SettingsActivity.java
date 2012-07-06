@@ -48,7 +48,11 @@ public class SettingsActivity extends Activity {
 	private OnClickListener logout_listener=new OnClickListener(){
         @Override
         public void onClick(View v) {
+        	// remove all shared prefs;
         	Pref.logOut(SettingsActivity.this);
+        	Pref.deleteHTTPSAuth(SettingsActivity.this);
+        	Pref.deleteNeedUpdateChatListActivity(SettingsActivity.this);
+        	
         	startActivity(new Intent(SettingsActivity.this, LoginActivity.class));
         	finish();
         }

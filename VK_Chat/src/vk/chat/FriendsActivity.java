@@ -22,6 +22,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -34,7 +35,8 @@ import android.widget.ListView;
 import android.widget.Toast;
 public class FriendsActivity extends Activity implements OnScrollListener{
 	
-	private static final int FORWARD_MESSAGES = 1;
+	private static boolean FORWARD_MESSAGES = false;
+	private static boolean ADD_USER_TO_CHAT = false;
 	
 	private String forwarded_messages = null;
 	//private static final int PICK_FROM_FILE = 2;
@@ -182,17 +184,26 @@ public class FriendsActivity extends Activity implements OnScrollListener{
 		public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
 			User friend = new User();
 			friend = u[position];
-				
-			Intent intent = new Intent(FriendsActivity.this, DialogActivity.class);
-			intent.putExtra("uid", friend.uid);
-			intent.putExtra("type", "uid");
-			if(forwarded_messages!=null){
-				intent.putExtra("f_msgs", forwarded_messages);
-				startActivity(intent);
-				finish();
+			FORWARD_MESSAGES = false;
+			if(ADD_USER_TO_CHAT){
+				Intent intent = new Intent();
+				intent.putExtra("uid", friend.uid);
+			    setResult(RESULT_OK, intent);
+			    ADD_USER_TO_CHAT = false;
+			    finish();
 			}
-			else
-				startActivity(intent);
+			else{
+				Intent intent = new Intent(FriendsActivity.this, DialogActivity.class);
+				intent.putExtra("uid", friend.uid);
+				intent.putExtra("type", "uid");
+				if(forwarded_messages!=null){
+					intent.putExtra("f_msgs", forwarded_messages);
+					startActivity(intent);
+					finish();
+				}
+				else
+					startActivity(intent);
+			}
 		}		
 	};
 	
@@ -263,11 +274,24 @@ public class FriendsActivity extends Activity implements OnScrollListener{
 		Intent i = getIntent();
 		Bundle extras = getIntent().getExtras();
 		if(i.hasExtra("f_msgs")){
+			FORWARD_MESSAGES = true;
 			forwarded_messages = extras.getString("f_msgs");
 			Toast.makeText(getApplicationContext(), forwarded_messages.toString(), Toast.LENGTH_LONG).show();
 		}
 		else
 			Toast.makeText(getApplicationContext(), "Not forwarded messages", Toast.LENGTH_LONG).show();
+		
+		if(i.hasExtra("addUserToChat")){
+			ADD_USER_TO_CHAT = true;
+			Toast.makeText(getApplicationContext(), "ADD_USER_TO_CHAT", Toast.LENGTH_LONG).show();
+		}
+	}
+	
+	public boolean onKeyDown(int keycode, KeyEvent event) {
+	    if (keycode == KeyEvent.KEYCODE_BACK || keycode == KeyEvent.KEYCODE_HOME) {
+	        moveTaskToBack(true);
+	    }
+	    return super.onKeyDown(keycode, event);
 	}
 
 }
