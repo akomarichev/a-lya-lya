@@ -727,7 +727,7 @@ public class API {
     
     public ArrayList<User> getUsers(String uids) throws MalformedURLException, IOException, JSONException{
         Params params = new Params("users.get");
-        String fields="first_name,last_name,photo_rec,online,contacts";
+        String fields="first_name,last_name,photo_rec,online,contacts,photo_medium";
         params.put("fields",fields);
         params.put("uids",uids);
 
@@ -789,6 +789,82 @@ public class API {
         params.put("uid", uid);       
         JSONObject root = sendRequest(params);
         return root.getString("response");
+    }
+    
+    public Long[] getRequestsFriends() throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("friends.getRequests");
+        params.put("need_messages", "1");
+        JSONObject root = sendRequest(params);
+        JSONArray array=root.optJSONArray("response");
+        Long [] users=null;
+        if (array != null) {        	
+            int count=array.length();
+            users = new Long [count];
+            for(int i=0; i<count; ++i) {
+                JSONObject item = array.optJSONObject(i);
+                Long id = item.optLong("uid");
+                users[i] = id;
+            }
+        }
+        return users;
+    }
+    
+    public ArrayList<User> getSuggestions() throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("friends.getSuggestions");
+        params.put("fields", "first_name,last_name,photo_rec,mutual,online,photo_medium");
+        
+        JSONObject root = sendRequest(params);
+        ArrayList<User> users=new ArrayList<User>();
+        JSONArray array=root.optJSONArray("response");
+        if(array==null)
+            return users;
+        int category_count=array.length();
+        for(int i=0; i<category_count; ++i){
+            JSONObject o = (JSONObject)array.get(i);
+            User u = User.parse(o);
+            users.add(u);
+        }
+        return users;
+    }
+    
+    public long addFriend(Long uid) throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("friends.add");
+        params.put("uid", uid);
+        JSONObject root = sendRequest(params);
+        return root.optLong("response");
+    }
+    
+    public long deleteFriend(Long uid) throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("friends.delete");
+        params.put("uid", uid);
+        JSONObject root = sendRequest(params);
+        return root.optLong("response");
+    }
+    
+    public ArrayList<User> searchUser(String q) throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("users.search");
+        params.put("q", q);
+        params.put("fields", "first_name,last_name,photo_rec,mutual,online,photo_medium");
+        JSONObject root = sendRequest(params);
+        JSONArray array=root.optJSONArray("response");
+        return parseUsers(array);
+    }
+    
+    private ArrayList<User> parseUsers(JSONArray array) throws JSONException {
+        ArrayList<User> users=new ArrayList<User>();
+        //it may be null if no users returned
+        //no users may be returned if we request users that are already removed
+        if(array==null)
+            return users;
+        int category_count=array.length();
+        for(int i=0; i<category_count; ++i){
+            if(array.get(i)==null || ((array.get(i) instanceof JSONObject)==false))
+                continue;
+            JSONObject o = (JSONObject)array.get(i);
+            User u = User.parse(o);
+            users.add(u);
+        }
+        return users;
     }
     
 }

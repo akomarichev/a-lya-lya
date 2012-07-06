@@ -3,6 +3,7 @@ package vk.adapters;
 import vk.adapters.MySimpleArrayAdapterFast.ViewHolder;
 import vk.api.API;
 import vk.api.User;
+import vk.chat.ChatListActivity;
 import vk.chat.R;
 import vk.pref.Pref;
 import android.content.Context;
@@ -19,13 +20,15 @@ import android.widget.TextView;
 
 public class ChatListAdapter extends ArrayAdapter<User> {
     private final Context context;
-    private final User[] values;
+    private User[] values;
+    private User[] buf;
     public static TextView text;
     public static TextView image;
     public static LayoutInflater inflater;
     public ImageDownloader loader;
     public API api;
     public Long chat_id;
+    
     
     static class ViewHolder {
 		public TextView text;
@@ -68,6 +71,7 @@ public class ChatListAdapter extends ArrayAdapter<User> {
 			        	try {
 	    					String response = api.removeChatUser(chat_id, values[position].uid);
 	    					Log.d("removeChatUser", response);
+	    					Pref.setNeedUpdateChatListActivity(context);
 		                } catch (Exception e) {
 		                    e.printStackTrace();
 		                }	

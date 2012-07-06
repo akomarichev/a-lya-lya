@@ -10,6 +10,7 @@ import org.json.JSONException;
 
 import vk.adapters.ConversationsAdapter;
 import vk.adapters.DialogAdapter;
+import vk.adapters.ImageDownloader;
 import vk.api.API;
 import vk.api.Message;
 import vk.api.User;
@@ -91,6 +92,7 @@ public class DialogActivity extends Activity {
 	private ArrayList<Integer> checkedItems = new ArrayList();
 	//private ArrayList<User> chat_users =new ArrayList();
 	private ArrayList<User> chat_users = new ArrayList();
+	private ArrayList<User> dialog_user = new ArrayList();
 	private HorizontalListView  lv_horizontal;
 	
 	private MyListAdapter myListAdapter;
@@ -113,6 +115,11 @@ public class DialogActivity extends Activity {
 	
 	private View rowViewHeaderButton;
 	
+	private ImageView back;
+	private ImageView ava;
+	private TextView name;
+	private ImageDownloader downloader = new ImageDownloader();
+	
 	
 	private ArrayList<Message> dialog;
 	private DialogDataSource db_dialog;
@@ -125,6 +132,7 @@ public class DialogActivity extends Activity {
         
         //create db
         db_dialog = new DialogDataSource(this);
+        
         
         
         conv_attach = (ImageView) findViewById(R.id.conv_attach);
@@ -224,6 +232,7 @@ public class DialogActivity extends Activity {
 		type = getIntent().getExtras().getString("type");
 		if(type.equals("uid")){
 			user_id = getIntent().getExtras().getLong("uid");
+			setupHeaderUI(user_id);
 			Intent i = getIntent();
 			if(i.hasExtra("f_msgs")){
 				forwarded_messages = getIntent().getExtras().getString("f_msgs");
@@ -249,6 +258,16 @@ public class DialogActivity extends Activity {
 		listView = (ListView)findViewById(R.id.list_dialog);
         getDialog();   
 	}
+	
+	void setupHeaderUI(Long uid){
+    	back = (ImageView) findViewById(R.id.iv_back);
+		back.setOnClickListener(backClick);
+		
+		ava = (ImageView) findViewById(R.id.iv_ava);
+		name = (TextView) findViewById(R.id.tv_user);
+		
+		loadAvaAndSetName(uid);
+    }
 	
 	private class MyListAdapter extends BaseAdapter {  
 		
@@ -325,6 +344,8 @@ public class DialogActivity extends Activity {
             return retval;
         }   
         
+        
+        
         private class MyClickListener implements OnClickListener {
 
             private int position;
@@ -350,6 +371,8 @@ public class DialogActivity extends Activity {
 
          }
     }; 
+    
+    
     
     public void setupUI(){
     	cancel = (Button) rowViewHeaderButton.findViewById(R.id.header_b_cancel);
@@ -708,4 +731,34 @@ public class DialogActivity extends Activity {
 		Intent intent = new Intent(DialogActivity.this, GMapsActivity.class);
         startActivityForResult(intent, PICK_LOCATION);
 	}
+	
+	private OnClickListener backClick=new View.OnClickListener(){		
+		@Override
+		public void onClick(View v) {
+			finish();
+		}
+	};
+	
+	private void loadAvaAndSetName(final Long uid) {
+        new Thread(){
+            @Override
+            public void run(){
+            	try {
+					dialog_user = api.getUsers(Long.toString(uid));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+            	if(dialog_user != null)
+            		runOnUiThread(successGetDialogUser);
+            }
+        }.start();
+    }
+	
+	Runnable successGetDialogUser=new Runnable(){
+        @Override
+        public void run() {
+        	downloader.download(dialog_user.get(0).photo_rec, ava);
+        	name.setText(dialog_user.get(0).first_name + " " + dialog_user.get(0).last_name);
+        }
+    };
 }

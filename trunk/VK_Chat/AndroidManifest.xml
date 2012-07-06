@@ -61,6 +61,9 @@
             			android:configChanges="orientation|keyboardHidden"></activity>
         <activity android:name=".ConfirmActivity"
             			android:configChanges="orientation|keyboardHidden"></activity>
+        <activity android:name=".RequestActivity"
+            			android:configChanges="orientation|keyboardHidden">
+        </activity>
     </application>
 
 </manifest>

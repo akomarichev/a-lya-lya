@@ -14,10 +14,14 @@ public class Pref {
     public static String DB_FRIENDS = "dbFriendsLoaded";
     public static String DB_CONVERSATIONS = "dbFriendsConversations";
     public static String DB_CHAT = "dbChatLoaded";
+    public static String DB_DIALOG = "dbDialogLoaded";
+    private static String PREFS_NAME = "my_prefs";    
     
-    private static String PREFS_NAME = "my_prefs";
+    // UPDATERS
+    public static String UPD_CONVERSATIONS = "update_conversations";
+    public static String UPD_CHAT_LIST_USER = "update_chat_list_users";
+    public static String UPD_DIALOG = "update_dialog";
     
-    /* DB */
     // FRIENDS DB
 	public static void setLoadedFriendsDB(Context c){
 		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
@@ -39,25 +43,25 @@ public class Pref {
 		return prefs.getBoolean(DB_FRIENDS, false);
 	}    
 	
-    // FRIENDS DB
+    // dialogs DB
 	public static void setLoadedDialogDB(Context c){
 		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
         Editor editor=prefs.edit();
-        editor.putBoolean(DB_FRIENDS, true);
+        editor.putBoolean(DB_DIALOG, true);
         editor.commit();
 	}
 	
     public static void cancelLoadedDialogDB(Context c){
 		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
         Editor editor=prefs.edit();
-        editor.putBoolean(DB_FRIENDS, false);
+        editor.putBoolean(DB_DIALOG, false);
         editor.commit();
 	}
     
 	public static Boolean loadedDialogDB(Context c){
 		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
 		final Editor editor=prefs.edit();
-		return prefs.getBoolean(DB_FRIENDS, false);
+		return prefs.getBoolean(DB_DIALOG, false);
 	}    
 
     // DB_CONVERSATIONS
@@ -162,6 +166,14 @@ public class Pref {
         return prefs.getString(Constants.USER_ID, null);       
     }
     
+    public static void deleteHTTPSAuth(Context c){
+    	SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+        Editor editor=prefs.edit();
+        editor.remove(Constants.ACCESS_TOKEN);
+        editor.remove(Constants.USER_ID);
+        editor.commit();
+    }
+    
     // LONGPOLL
     
     public static void setLongPollServer(Context c, String key, String server, Long ts){
@@ -179,7 +191,7 @@ public class Pref {
         editor.remove(Constants.LONGPOLL_KEY);
         editor.remove(Constants.LONGPOLL_SERVER);
         editor.remove(Constants.LONGPOLL_TS);
-        editor.putBoolean(HAS_LOGGED_IN, false);
+        //editor.putBoolean(HAS_LOGGED_IN, false);
         editor.commit();
 	}
     
@@ -192,4 +204,36 @@ public class Pref {
 	}
     
     // END LONGPOLL
+	
+	
+	// *************************** UPDATERS ******************************* //	
+	public static void setNeedUpdateChatListActivity(Context c){
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+        Editor editor=prefs.edit();
+        editor.putBoolean(UPD_CHAT_LIST_USER, true);
+        editor.commit();
+	}
+	
+    public static void resetNeedUpdateChatListActivity(Context c){
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+        Editor editor=prefs.edit();
+        editor.putBoolean(UPD_CHAT_LIST_USER, false);
+        editor.commit();
+	}
+    
+	public static Boolean isSetNeedUpdateChatListActivity(Context c){
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+		final Editor editor=prefs.edit();
+		return prefs.getBoolean(UPD_CHAT_LIST_USER, false);
+	} 
+	
+	public static void deleteNeedUpdateChatListActivity(Context c){
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+        Editor editor=prefs.edit();
+        editor.remove(UPD_CHAT_LIST_USER);
+        editor.commit();
+	}
+	
+	
+	// *************************** END UPDATERS ******************************* //
 }
