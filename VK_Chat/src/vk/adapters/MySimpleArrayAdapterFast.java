@@ -67,17 +67,17 @@ public class MySimpleArrayAdapterFast extends ArrayAdapter<User> {
 			viewHolder = (ViewHolder) convertView.getTag();
 		}
         
-        /*if(position < 5)
+        if(position < 5)
         	viewHolder.separator.setVisibility(View.GONE);
-        else{*/
-        
-        viewHolder.separator.setVisibility(View.GONE);
-        if(letter_buffer.containsKey(position)){        	
-        	viewHolder.letter.setVisibility(View.VISIBLE);
-			viewHolder.separator.setVisibility(View.VISIBLE);
-			viewHolder.image_separator.setVisibility(View.VISIBLE);
-
-			viewHolder.letter.setText(letter_buffer.get(position));
+        else{
+        	viewHolder.separator.setVisibility(View.GONE);
+	        if(letter_buffer.containsKey(position)){        	
+	        	viewHolder.letter.setVisibility(View.VISIBLE);
+				viewHolder.separator.setVisibility(View.VISIBLE);
+				viewHolder.image_separator.setVisibility(View.VISIBLE);
+	
+				viewHolder.letter.setText(letter_buffer.get(position));
+	        }
 	    }
         
         viewHolder.text.setText(values[position].first_name+" "+values[position].last_name);

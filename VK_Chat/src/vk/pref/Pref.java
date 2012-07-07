@@ -22,6 +22,9 @@ public class Pref {
     public static String UPD_CHAT_LIST_USER = "update_chat_list_users";
     public static String UPD_DIALOG = "update_dialog";
     
+    // SYNCH
+    public static String SYNCH = "press_synch";
+    
     // FRIENDS DB
 	public static void setLoadedFriendsDB(Context c){
 		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
@@ -223,7 +226,6 @@ public class Pref {
     
 	public static Boolean isSetNeedUpdateChatListActivity(Context c){
 		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
-		final Editor editor=prefs.edit();
 		return prefs.getBoolean(UPD_CHAT_LIST_USER, false);
 	} 
 	
@@ -236,4 +238,25 @@ public class Pref {
 	
 	
 	// *************************** END UPDATERS ******************************* //
+	
+	
+	// SYNCH
+	public static boolean getSynch(Context c){
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+		return prefs.getBoolean(SYNCH, false);
+	}
+	
+	public static void setSynch(Context c){
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+		Editor editor=prefs.edit();
+        editor.putBoolean(SYNCH, true);
+        editor.commit();
+	}
+	
+	public static void deleteSynch(Context c){
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+		Editor editor=prefs.edit();
+        editor.remove(SYNCH);
+        editor.commit();
+	}
 }

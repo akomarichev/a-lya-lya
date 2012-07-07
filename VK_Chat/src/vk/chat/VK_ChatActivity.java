@@ -6,6 +6,7 @@ import vk.pref.Pref;
 
 import android.app.Activity;
 import android.app.TabActivity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -31,9 +32,14 @@ public class VK_ChatActivity extends TabActivity{
 	
 	//SharedPreferences mPrefs;
 	//final String showLoginActivity = "showLoginActivity";
-	Button loginButton;	
-	API api;
-	static TabHost tabHost;
+	private Button loginButton;	
+	private API api;
+	private static TabHost tabHost;
+	
+	public static ImageView iv_notify_mess;
+	public static ImageView iv_notify_search;
+	public static TextView tv_notify_mess;
+	public static TextView tv_notify_search;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -47,129 +53,73 @@ public class VK_ChatActivity extends TabActivity{
 	        startActivity(intent);
 	        finish();
         } else{
-        
-        Resources res = getResources(); // Resource object to get Drawables
-        tabHost = getTabHost();  // The activity TabHost
-        TabHost.TabSpec spec;  // Resusable TabSpec for each tab
-        Intent intent;  // Reusable Intent for each tab
-        
-        //tabHost.setOnTabChangedListener(this);
+        	tabHost = (TabHost) findViewById(android.R.id.tabhost);
+            tabHost.setup();
 
-        // Create an Intent to launch an Activity for the tab (to be reused)
-        intent = new Intent().setClass(this, ContactsActivity.class);
-
-        // Initialize a TabSpec for each tab and add it to the TabHost
-        spec = tabHost.newTabSpec("con").setIndicator("",
-                          res.getDrawable(R.drawable.tab_bottom_con_s))
-                      .setContent(intent);
-        tabHost.addTab(spec);
-
-        // Do the same for the other tabs
-        intent = new Intent().setClass(this, ConversationsActivity.class);
-        spec = tabHost.newTabSpec("msg").setIndicator("",
-                          res.getDrawable(R.drawable.tab_bottom_msg_s))
-                      .setContent(intent);
-        tabHost.addTab(spec);
-
-        intent = new Intent().setClass(this, SearchActivity.class);
-        spec = tabHost.newTabSpec("search").setIndicator("",
-                          res.getDrawable(R.drawable.tab_bottom_search_s))
-                      .setContent(intent);
-        
-        //spec.setIndicator(tabIndicator);
-        tabHost.addTab(spec);
-        
-        intent = new Intent().setClass(this, SettingsActivity.class);
-        //intent = new Intent().setClass(this, ChangePhotoActivity.class);
-        spec = tabHost.newTabSpec("stg").setIndicator("",
-                          res.getDrawable(R.drawable.tab_bottom_stg_s))
-                      .setContent(intent);
-        tabHost.addTab(spec);
-        
-        
-        
-        //tabHost.getTabWidget().addView(tabIndicator, 2);  
-        //tabHost.rem
-        
-        for(int i=0;i<tabHost.getTabWidget().getChildCount();i++)
-        {
-            tabHost.getTabWidget().getChildAt(i).setBackgroundResource(R.drawable.tab_black_bottom);
-            //View tabIndicator = LayoutInflater.from(this).inflate(R.layout.notification, getTabWidget(), false);
-            //ImageView title = (ImageView) tabIndicator.findViewById(R.id.iv_notif);
-            //tab = tabIndicator;
-            //tabHost.getTabWidget().getChildAt(i);
-            //tabHost.getTabWidget().getChildTabViewAt(i).
-        }
-        
-        //if (!startLoginActivity) {        
-        	//SharedPreferences.Editor editor = mPrefs.edit();
-            //editor.putBoolean(showLoginActivity, true);
-            //editor.commit();
-	        //setupUI();
-	        //Authorization();
-        //}
-        
-        //repaintTabHost(); // добавил нотификацию.
+	        Intent intent;
+	
+	        intent = new Intent().setClass(this, ContactsActivity.class);
+	        setupTabFr(new TextView(this), "con", intent);
+	
+	        intent = new Intent().setClass(this, ConversationsActivity.class);
+	        setupTabMessages(new TextView(this), "msg", intent);
+	
+	        intent = new Intent().setClass(this, SearchActivity.class);
+	        setupTabSearch(new TextView(this), "search", intent);
+	        
+	        intent = new Intent().setClass(this, SettingsActivity.class);
+	        setupTabSett(new TextView(this), "stg", intent);
         }
     }
     
-    public void repaintTabHost(){
-    	tabHost.getTabWidget().removeAllViews();
-    	tabHost.clearAllTabs();
-    	tabHost.setup();
+    private void setupTabMessages(final View view, final String tag, final Intent intent) {
+		View tabview = createTabViewMess(tabHost.getContext());
+	    TabSpec setContent = tabHost.newTabSpec(tag).setIndicator(tabview).setContent(intent);
+		tabHost.addTab(setContent);
+	}
 
-    	Resources res = getResources(); // Resource object to get Drawables
-        TabHost.TabSpec spec;  // Resusable TabSpec for each tab
-        Intent intent;  // Reusable Intent for each tab
-        
-        //tabHost.setOnTabChangedListener(this);
+	private static View createTabViewMess(final Context context) {
+		View view = LayoutInflater.from(context).inflate(R.layout.tab_mess, null);
+		iv_notify_mess = (ImageView) view.findViewById(R.id.iv_notify);
+		tv_notify_mess = (TextView) view.findViewById(R.id.tv_notify);
+		return view;
+	}
+	
+	private void setupTabSearch(final View view, final String tag, final Intent intent) {
+		View tabview = createTabViewSearch(tabHost.getContext());
+	    TabSpec setContent = tabHost.newTabSpec(tag).setIndicator(tabview).setContent(intent);
+		tabHost.addTab(setContent);
+	}
 
-        // Create an Intent to launch an Activity for the tab (to be reused)
-        intent = new Intent().setClass(this, ContactsActivity.class);
+	private static View createTabViewSearch(final Context context) {
+		View view = LayoutInflater.from(context).inflate(R.layout.tab_search, null);
+		iv_notify_search = (ImageView) view.findViewById(R.id.iv_notify);
+		tv_notify_search = (TextView) view.findViewById(R.id.tv_notify);
+		return view;
+	}
+	
+	private void setupTabFr(final View view, final String tag, final Intent intent) {
+		View tabview = createTabViewFr(tabHost.getContext());
+	    TabSpec setContent = tabHost.newTabSpec(tag).setIndicator(tabview).setContent(intent);
+		tabHost.addTab(setContent);
+	}
 
-        // Initialize a TabSpec for each tab and add it to the TabHost
-        spec = tabHost.newTabSpec("con").setIndicator("",
-                          res.getDrawable(R.drawable.tab_bottom_con_s))
-                      .setContent(intent);
-        tabHost.addTab(spec);
+	private static View createTabViewFr(final Context context) {
+		View view = LayoutInflater.from(context).inflate(R.layout.tab_fr, null);
+		return view;
+	}
+	
+	private void setupTabSett(final View view, final String tag, final Intent intent) {
+		View tabview = createTabViewSett(tabHost.getContext());
+	    TabSpec setContent = tabHost.newTabSpec(tag).setIndicator(tabview).setContent(intent);
+		tabHost.addTab(setContent);
+	}
 
-        // Do the same for the other tabs
-        intent = new Intent().setClass(this, ConversationsActivity.class);
-        spec = tabHost.newTabSpec("msg")./*setIndicator("",
-                          res.getDrawable(R.drawable.tab_bottom_msg_s))
-                      .*/setContent(intent);
-        
-        View tabIndicator = LayoutInflater.from(this).inflate(R.layout.notification, getTabWidget(), false);
-        tabIndicator.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
-        ImageView title = (ImageView) tabIndicator.findViewById(R.id.iv_notif);
-        ImageView notification = (ImageView) tabIndicator.findViewById(R.id.iv_notification);
-        TextView t = (TextView) tabIndicator.findViewById(R.id.tv_not);
-        spec.setIndicator(tabIndicator);
-        
-        tabHost.addTab(spec);
+	private static View createTabViewSett(final Context context) {
+		View view = LayoutInflater.from(context).inflate(R.layout.tab_sett, null);
+		return view;
+	}
 
-        intent = new Intent().setClass(this, SearchActivity.class);
-        spec = tabHost.newTabSpec("search").setIndicator("",
-                          res.getDrawable(R.drawable.tab_bottom_search_s))
-                      .setContent(intent);
-        
-        //spec.setIndicator(tabIndicator);
-        tabHost.addTab(spec);
-        
-        //intent = new Intent().setClass(this, SettingsActivity.class);
-        intent = new Intent().setClass(this, ChangePhotoActivity.class);
-        spec = tabHost.newTabSpec("stg").setIndicator("",
-                          res.getDrawable(R.drawable.tab_bottom_stg_s))
-                      .setContent(intent);
-        tabHost.addTab(spec);
-        
-        
-        for(int i=0;i<tabHost.getTabWidget().getChildCount();i++)
-        {
-            tabHost.getTabWidget().getChildAt(i).setBackgroundResource(R.drawable.tab_black_bottom);
-        }
-    }
-    
     public void setupUI(){
     	loginButton = (Button) findViewById(R.id.button1);
     	loginButton.setOnClickListener(loginClick);
@@ -191,16 +141,6 @@ public class VK_ChatActivity extends TabActivity{
     	else
     		startLoginActivity(); 		
     }
-    
-    /*@Override
-    public void onTabChanged(String tabId) {
-        // TODO Auto-generated method stub
-        for(int i=0;i<tabHost.getTabWidget().getChildCount();i++)
-        {
-            tabHost.getTabWidget().getChildAt(i).setBackgroundColor(Color.parseColor("#C35817"));
-        }
-        tabHost.getTabWidget().getChildAt(tabHost.getCurrentTab()).setBackgroundColor(Color.parseColor("#C35817"));
-    }*/
     
     private void startLoginActivity() {
         /*Intent intent = new Intent(VK_ChatActivity.this, LoginActivity.class);

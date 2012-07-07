@@ -471,7 +471,7 @@ public class API {
     public ArrayList<User> getUsersByPhones(String phones) throws MalformedURLException, IOException, JSONException{
         Params params = new Params("friends.getByPhones");
         params.put("phones", phones);
-        params.put("fields", "first_name,last_name,photo_rec");
+        params.put("fields", "first_name,last_name,photo_rec,mobile_phone,photo_medium");
         
         JSONObject root = sendRequest(params);
         ArrayList<User> users=new ArrayList<User>();
@@ -865,6 +865,13 @@ public class API {
             users.add(u);
         }
         return users;
+    }
+    
+    public Long isAppUser(Long uid) throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("isAppUser");
+        params.put("uid", uid);
+        JSONObject root = sendRequest(params);
+        return root.optLong("response");
     }
     
 }

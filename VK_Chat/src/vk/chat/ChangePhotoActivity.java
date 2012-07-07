@@ -3,10 +3,13 @@ package vk.chat;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 
 import org.json.JSONException;
 
+import vk.adapters.ImageDownloader;
 import vk.api.API;
+import vk.api.User;
 import vk.constants.Constants;
 import vk.pref.Pref;
 
@@ -24,6 +27,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -33,12 +37,16 @@ import android.widget.Toast;
 public class ChangePhotoActivity extends Activity {
 	
 	private final String TAG = "ChangePhotoActivity";
+	private ImageView back;
 	
 	Button b;
 	ImageView iv;
 	API api;
 	private final static int TAKE_PICTURE = 1;
 	private Uri mImageCaptureUri;	
+	
+	private String url;
+	private ImageDownloader loader;
 
 	private static final int PICK_FROM_CAMERA = 1;
 	private static final int PICK_FROM_FILE = 2;
@@ -47,12 +55,22 @@ public class ChangePhotoActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
+	    requestWindowFeature(Window.FEATURE_NO_TITLE);
 	    setContentView(R.layout.change_photo);
 	    
 	    api = new API(Pref.getAccessTokenHTTPS(ChangePhotoActivity.this));
+	    loader = new ImageDownloader();
 	    
-	    b = (Button) findViewById(R.id.to_change);
-	    iv = (ImageView) findViewById(R.id.ava);
+	    back = (ImageView) findViewById(R.id.iv_back);
+		back.setOnClickListener(clickBack);
+	    
+	    b = (Button) findViewById(R.id.to_change_);
+	    iv = (ImageView) findViewById(R.id.ava_change_photo);
+	    
+	    getURLPhoto();
+	    
+	    if(url != null)
+			loader.download(url, iv);
 	    
         final String [] items			= new String [] {"From Camera", "From SD Card"};				
 		ArrayAdapter<String> adapter	= new ArrayAdapter<String> (this, android.R.layout.select_dialog_item,items);
@@ -120,21 +138,21 @@ public class ChangePhotoActivity extends Activity {
 			bitmap  = BitmapFactory.decodeFile(path);
 		}
 
-		iv.setImageBitmap(bitmap);	
+		//iv.setImageBitmap(bitmap);	
 		String url = null;
 		String res[];
 		String res2[];
 		try {
 			url = api.photosGetProfileUploadServer();
-			Log.d("1", mImageCaptureUri.toString());
-			Log.d("2", mImageCaptureUri.getPath());
+			//Log.d("1", mImageCaptureUri.toString());
+			//Log.d("2", mImageCaptureUri.getPath());
 			res = api.uploadPhotoServer(url, getRealPathFromURI(mImageCaptureUri));
-			Log.d("ChangePhotoActivity", res[0]);
-			Log.d("ChangePhotoActivity", res[1]);
-			Log.d("ChangePhotoActivity", res[2]);
+			//Log.d("ChangePhotoActivity", res[0]);
+			//Log.d("ChangePhotoActivity", res[1]);
+			//Log.d("ChangePhotoActivity", res[2]);
 			res2 = api.saveProfilePhoto(res[0],res[1],res[2]);
-			Log.d("ChangePhotoActivity", res2[0]);
-			Log.d("ChangePhotoActivity", res2[1]);
+			//Log.d("ChangePhotoActivity", res2[0]);
+			//Log.d("ChangePhotoActivity", res2[1]);*/
 			
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
@@ -148,10 +166,13 @@ public class ChangePhotoActivity extends Activity {
 		}
 		
 		
-		
-		Toast.makeText(getApplicationContext(),
-		"path: " + url, Toast.LENGTH_LONG)
-		.show();
+		getURLPhoto();
+	    
+	    if(this.url != null)
+			loader.download(this.url, iv);
+		//Toast.makeText(getApplicationContext(),
+		//"path: " + url, Toast.LENGTH_LONG)
+		//.show();
 	}
 
 	public String getRealPathFromURI(Uri contentUri) {
@@ -166,4 +187,30 @@ public class ChangePhotoActivity extends Activity {
 
         return cursor.getString(column_index);
 	}
+	
+	public void getURLPhoto(){
+		String userID = Pref.getUserID(this);
+		ArrayList<User> list = null;
+		try {
+			list = api.getUsers(userID);
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(list != null)
+			url = list.get(0).photo_medium;
+	}
+	
+	private OnClickListener clickBack=new View.OnClickListener(){		
+		@Override
+		public void onClick(View v) {
+			finish();
+		}
+	};
 }

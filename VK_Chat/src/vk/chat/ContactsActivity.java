@@ -1,60 +1,51 @@
 package vk.chat;
 
-import android.app.Activity;
 import android.app.TabActivity;
+import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.view.Window;
 import android.widget.TabHost;
+import android.widget.TabHost.TabSpec;
 import android.widget.TextView;
 
-public class ContactsActivity extends TabActivity {
+public class ContactsActivity extends TabActivity{
 	
 	TabHost tabHost;
 
-	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
 	    requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.contacts);   
-        
-        Log.d("Artem","contacts");
 	    
-	    Resources res = getResources(); // Resource object to get Drawables
-        tabHost = getTabHost();  // The activity TabHost
-        TabHost.TabSpec spec;  // Resusable TabSpec for each tab
-        Intent intent;  // Reusable Intent for each tab
-        
-        //tabHost.setOnTabChangedListener(this);
+        tabHost = (TabHost) findViewById(android.R.id.tabhost);
+        tabHost.setup();
+        Intent intent;
 
-        // Create an Intent to launch an Activity for the tab (to be reused)
         intent = new Intent().setClass(this, FriendsActivity.class);
+        setupTab(new TextView(this), getString(R.string.c_friends), intent);
 
-        // Initialize a TabSpec for each tab and add it to the TabHost
-        spec = tabHost.newTabSpec("friends").setIndicator(getString(R.string.c_friends))
-                      .setContent(intent);
-        
-        tabHost.addTab(spec);
-
-        // Do the same for the other tabs
         intent = new Intent().setClass(this, OnlineFriendsActivity.class);
-        spec = tabHost.newTabSpec("online_friends").setIndicator(getString(R.string.c_online))
-                      .setContent(intent);
-        tabHost.addTab(spec);
+        setupTab(new TextView(this), getString(R.string.c_online), intent);
 
         intent = new Intent().setClass(this, HandsetContactsActivity.class);
-        spec = tabHost.newTabSpec("handset_contacts").setIndicator(getString(R.string.c_contacts))
-                      .setContent(intent);
-        tabHost.addTab(spec);
-        
-        for(int i=0;i<tabHost.getTabWidget().getChildCount();i++)
-        {
-            tabHost.getTabWidget().getChildAt(i).setBackgroundResource(R.drawable.tab_black_bottom);
-            
-        }
+        setupTab(new TextView(this), getString(R.string.c_contacts), intent);
+	}
+	
+	private void setupTab(final View view, final String tag, final Intent intent) {
+		View tabview = createTabView(tabHost.getContext(), tag);
+	        TabSpec setContent = tabHost.newTabSpec(tag).setIndicator(tabview).setContent(intent);
+		tabHost.addTab(setContent);
+	}
+
+	private static View createTabView(final Context context, final String text) {
+		View view = LayoutInflater.from(context).inflate(R.layout.tab_contacts, null);
+		TextView tv = (TextView) view.findViewById(R.id.tabsText);
+		tv.setText(text);
+		return view;
 	}
 
 }
