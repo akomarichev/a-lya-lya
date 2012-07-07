@@ -37,6 +37,7 @@ public class FriendsActivity extends Activity implements OnScrollListener{
 	
 	private static boolean FORWARD_MESSAGES = false;
 	private static boolean ADD_USER_TO_CHAT = false;
+	private static boolean INVITE_FRIEND = false;
 	
 	private String forwarded_messages = null;
 	//private static final int PICK_FROM_FILE = 2;
@@ -192,6 +193,14 @@ public class FriendsActivity extends Activity implements OnScrollListener{
 			    ADD_USER_TO_CHAT = false;
 			    finish();
 			}
+			else if(INVITE_FRIEND){
+				Intent intent = new Intent(FriendsActivity.this, UserRegisteredActivity.class);
+				intent.putExtra("name", u[position].first_name + " " + u[position].last_name);
+				intent.putExtra("photo", u[position].photo_medium);
+				intent.putExtra("uid", u[position].uid);
+				intent.putExtra("phone", u[position].mobile_phone);
+				startActivity(intent);
+			}
 			else{
 				Intent intent = new Intent(FriendsActivity.this, DialogActivity.class);
 				intent.putExtra("uid", friend.uid);
@@ -285,11 +294,16 @@ public class FriendsActivity extends Activity implements OnScrollListener{
 			ADD_USER_TO_CHAT = true;
 			Toast.makeText(getApplicationContext(), "ADD_USER_TO_CHAT", Toast.LENGTH_LONG).show();
 		}
+		
+		if(i.hasExtra("inviteFriend")){
+			INVITE_FRIEND = true;
+			Toast.makeText(getApplicationContext(), "INVITE_FRIEND", Toast.LENGTH_LONG).show();
+		}
 	}
 	
 	public boolean onKeyDown(int keycode, KeyEvent event) {
 	    if (keycode == KeyEvent.KEYCODE_BACK || keycode == KeyEvent.KEYCODE_HOME) {
-	        moveTaskToBack(true);
+	       INVITE_FRIEND = false;
 	    }
 	    return super.onKeyDown(keycode, event);
 	}

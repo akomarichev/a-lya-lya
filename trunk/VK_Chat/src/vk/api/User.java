@@ -23,8 +23,8 @@ public class User {
             u.online = o.optInt("online")==1;
         if(!o.isNull("photo_rec"))
             u.photo_rec = o.optString("photo_rec");
-        if(!o.isNull("mobile_phone"))
-            u.mobile_phone = o.optString("mobile_phone");
+        if(!o.isNull("phone"))
+            u.mobile_phone = o.optString("phone");
         if(!o.isNull("photo_medium"))
             u.photo_medium = o.optString("photo_medium");
         return u;
