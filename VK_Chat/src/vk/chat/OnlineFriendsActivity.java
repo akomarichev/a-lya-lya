@@ -5,32 +5,26 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import org.json.JSONException;
-
-import vk.adapters.ConversationsAdapter;
-import vk.adapters.MySimpleArrayAdapterFast;
+import vk.adapters.OnlineFriendsAdapter;
 import vk.api.API;
 import vk.api.User;
-import vk.chat.ConversationsActivity.Starter;
 import vk.db.datasource.FriendsDataSource;
 import vk.pref.Pref;
-import vk.utils.Synch;
 import vk.utils.UserFullNameComparator;
 import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
+import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.AdapterView.OnItemClickListener;
 
 public class OnlineFriendsActivity extends Activity {
 	private ArrayList<User> friends;
@@ -40,7 +34,7 @@ public class OnlineFriendsActivity extends Activity {
 	private static Integer currentPosition = 0;
 	private static User [] u;
 	static ListView listView;
-	MySimpleArrayAdapterFast adapter;
+	OnlineFriendsAdapter adapter;
 	private FriendsDataSource db_friends;
 	
 	private ArrayList<User> online_friends = new ArrayList();
@@ -64,6 +58,7 @@ public class OnlineFriendsActivity extends Activity {
 	    db_friends.open();
 	    
 	    listView = (ListView)findViewById(R.id.list);
+	    listView.setOnItemClickListener(clickDilog);
 	    
 	    new AsyncTask<Context, Void, Void>() {
 	    	
@@ -85,7 +80,7 @@ public class OnlineFriendsActivity extends Activity {
 	        protected Void doInBackground(Context... params) {
 		            API api = new API(Pref.getAccessTokenHTTPS(OnlineFriendsActivity.this)); 
 		            try {
-						friends = api.getFriends();
+						friends = api.getFriends(Pref.getUserID(OnlineFriendsActivity.this));
 					} catch (Exception e) { e.printStackTrace(); } 
 
 		            listView = (ListView)findViewById(R.id.list);
@@ -114,7 +109,7 @@ public class OnlineFriendsActivity extends Activity {
 		    		for(int i = 0; i<max; i++){
 			    	        String letter = Character.toString(u[i].first_name.charAt(0)).toUpperCase();
 			    	        if(!letter.equals(lastLetter)){
-			    	        	MySimpleArrayAdapterFast.letter_buffer.put(i, letter);
+			    	        	OnlineFriendsAdapter.letter_buffer.put(i, letter);
 			    			    lastLetter = letter;
 			    	        }
 		    		}		    		
@@ -127,7 +122,7 @@ public class OnlineFriendsActivity extends Activity {
 	                handler.post(new Runnable(){
 	                     @Override
 	                     public void run(){
-	     		            adapter = new MySimpleArrayAdapterFast(OnlineFriendsActivity.this, u);
+	     		            adapter = new OnlineFriendsAdapter(OnlineFriendsActivity.this, u);
 	                        listView.removeHeaderView(headerView);
 	                 		listView.setAdapter(adapter);
 	                     }
@@ -147,5 +142,18 @@ public class OnlineFriendsActivity extends Activity {
 			loader.stop();			
 		}  	
     }
+	
+    private OnItemClickListener clickDilog=new OnItemClickListener(){
+
+		@Override
+		public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+			User friend = new User();
+			friend = u[position];
+			Intent intent = new Intent(OnlineFriendsActivity.this, DialogActivity.class);
+			intent.putExtra("uid", friend.uid);
+			intent.putExtra("type", "uid");
+			startActivity(intent);
+		}		
+	};
 
 }

@@ -6,6 +6,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class FriendsSQLiteHelper extends SQLiteOpenHelper {
 	
+	private static FriendsSQLiteHelper mInstance = null;
+	
 	//Fields
 	public static final String TABLE_FRIENDS = "friends";
 	public static final String COLUMN_UID = "uid";
@@ -30,6 +32,14 @@ public class FriendsSQLiteHelper extends SQLiteOpenHelper {
 	public FriendsSQLiteHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	}
+	
+	public static FriendsSQLiteHelper getInstance(Context ctx) {
+        if (mInstance == null) {
+            mInstance = new FriendsSQLiteHelper(ctx.getApplicationContext());
+        }
+        return mInstance;
+    }
+		
 		
 	@Override
 	public void onCreate(SQLiteDatabase database) {

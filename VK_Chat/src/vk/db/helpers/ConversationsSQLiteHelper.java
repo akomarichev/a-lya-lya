@@ -6,6 +6,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class ConversationsSQLiteHelper extends SQLiteOpenHelper {
 	
+	private static ConversationsSQLiteHelper mInstance = null;
+	
 	//Fields
 	public static final String TABLE_CONVERSATIONS = "conversations";
 	public static final String COLUMN_MID = "mid";
@@ -34,6 +36,13 @@ public class ConversationsSQLiteHelper extends SQLiteOpenHelper {
 	public ConversationsSQLiteHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	}
+	
+	public static ConversationsSQLiteHelper getInstance(Context ctx) {
+        if (mInstance == null) {
+            mInstance = new ConversationsSQLiteHelper(ctx.getApplicationContext());
+        }
+        return mInstance;
+    }
 		
 	@Override
 	public void onCreate(SQLiteDatabase database) {

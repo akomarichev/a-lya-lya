@@ -12,6 +12,7 @@ import vk.api.Photo;
 import vk.api.User;
 import vk.chat.R;
 import vk.pref.Pref;
+import vk.utils.CheckConnection;
 import vk.utils.WorkWithTimeAndDate;
 import android.content.Context;
 import android.media.AudioManager;
@@ -49,6 +50,7 @@ public class ForwardMessageViewer{
     	this.m = m;
     	c = context;
     	api = new API(Pref.getAccessTokenHTTPS(context));
+    	
     	initView(rowViewPhoto);
 		return rowViewPhoto;	    	
     }
@@ -61,23 +63,24 @@ public class ForwardMessageViewer{
 		time.setText(WorkWithTimeAndDate.getTime(m.date, c));
 		message.setText(m.body);
 		
-		new AsyncTask<Context, Void, Void>() {
-
-	        @Override
-	        protected Void doInBackground(Context... params) {
-	        	try {
-					user = api.getUsers(Long.toString(m.uid));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }	
-	                return null;
-	            } 
-	        
-	            @Override
-	            public void onPostExecute(Void result){
-	            	name.setText(user.get(0).first_name + " " + user.get(0).last_name);	                
-			        loader.download(user.get(0).photo_rec, ava);
-	            }
-	       }.execute();
+		if(CheckConnection.isOnline(c))
+			new AsyncTask<Context, Void, Void>() {
+	
+		        @Override
+		        protected Void doInBackground(Context... params) {
+		        	try {
+						user = api.getUsers(Long.toString(m.uid));
+	                } catch (Exception e) {
+	                    e.printStackTrace();
+	                }	
+		                return null;
+		            } 
+		        
+		            @Override
+		            public void onPostExecute(Void result){
+		            	name.setText(user.get(0).first_name + " " + user.get(0).last_name);	                
+				        loader.download(user.get(0).photo_rec, ava);
+		            }
+		       }.execute();
 	}
 }

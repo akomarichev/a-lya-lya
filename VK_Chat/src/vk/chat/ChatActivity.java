@@ -21,6 +21,7 @@ import vk.horizontal.listview.ui.HorizontalListView;
 import vk.popup.ActionItem;
 import vk.popup.QuickAction;
 import vk.pref.Pref;
+import vk.utils.CheckConnection;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -122,7 +123,9 @@ public class ChatActivity extends Activity {
 	
 	
 	private ArrayList<Message> dialog;
-	private DialogDataSource db_dialog;
+	private ArrayList<Message> dialog_from_db;
+	private ArrayList<Message> dialog_from_inet;
+	//private DialogDataSource db_dialog;
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -131,7 +134,7 @@ public class ChatActivity extends Activity {
         setContentView(R.layout.chat);
         
         //create db
-        db_dialog = new DialogDataSource(this);
+        //db_dialog = new DialogDataSource(this);
         
         
         conv_attach = (ImageView) findViewById(R.id.conv_attach);
@@ -252,7 +255,8 @@ public class ChatActivity extends Activity {
 			if(getIntent().hasExtra("title"))
 				title = getIntent().getExtras().getString("title");
 			try {
-				chat_users = api.getChatUsers(chat_id);
+				if(CheckConnection.isOnline(this))
+					chat_users = api.getChatUsers(chat_id);
 				multichat.setText(chat_users.size()-1 + "  ");
 				title_tv.setText(title);
 				Log.d("chat_users",chat_users.toString());
@@ -441,7 +445,8 @@ public class ChatActivity extends Activity {
 			header.setVisibility(View.VISIBLE);
 			dialog_linear_layout.removeView(rowViewHeaderButton);
 			header_bottons = false;
-        	getDialog();
+			updateDialog();
+        	//getDialog();
         	adapter.notifyDataSetChanged();
             Toast.makeText(getApplicationContext(), getResources().getString(R.string.vd_success_deleted), Toast.LENGTH_LONG).show();
         }
@@ -513,7 +518,8 @@ public class ChatActivity extends Activity {
         	loader.stop();
         	conv_attach.setBackgroundResource(R.drawable.attach);
         	conv_attach.setClickable(true);
-        	getDialog();
+        	updateDialog();
+        	//getDialog();
         	adapter.notifyDataSetChanged();
         	photo_atts = "";
             Toast.makeText(getApplicationContext(), getResources().getString(R.string.vd_success_sent), Toast.LENGTH_LONG).show();
@@ -531,21 +537,24 @@ public class ChatActivity extends Activity {
     };
     
     private void getDialog(){    	
-//    	db_dialog.open();
+    	//db_dialog.open();
 //    	
 //    	Log.d("db_inserts", "db_inserts");
 //    	
 //    	//Pref.cancelLoadedDialogDB(DialogActivity.this);
 //    	
 //    	if(!Pref.loadedDialogDB(DialogActivity.this)){
-    		try{
-            	if(chat_id != 0)
-            		dialog = api.getMessagesHistory(0, chat_id, (long) 0, 100);
-            	else
-            		dialog = api.getMessagesHistory(user_id, -20, (long) 0, 100);		
-    		} catch (Exception e){
-    			e.printStackTrace();
-    		} 
+    	dialog_from_db = VK_ChatActivity.db_dialog.getChatDialog(chat_id, this);
+		//db_dialog.close();
+		updateDialog();
+    	//db_dialog.removeAll();
+    	//loadDialogDb(dialog);
+    //}
+//    else{
+//    	dialog = db_dialog.getUserDialog(user_id, DialogActivity.this);
+//    	db_dialog.close();
+//    }
+		dialog = dialog_from_db;
 //        	db_dialog.removeAll();
 //        	loadDialogDb(dialog);
 //        }
@@ -597,14 +606,57 @@ public class ChatActivity extends Activity {
 		});
     }
     
+    private void updateDialog(){
+   	 new Thread(){
+            @Override
+            public void run(){
+           	 if(CheckConnection.isOnline(ChatActivity.this)){
+           		//db_dialog.open();
+            	dialog_from_db = VK_ChatActivity.db_dialog.getChatDialog(chat_id, ChatActivity.this);
+        		//db_dialog.close();
+	            	 try{
+	                 	if(chat_id != 0)
+	                 		dialog_from_inet = api.getMessagesHistory(0, chat_id, (long) 0, 100);
+	                 	else
+	                 		dialog_from_inet = api.getMessagesHistory(user_id, -20, (long) 0, 100);		
+	         		} catch (Exception e){
+	         			e.printStackTrace();
+	         		} 
+	            	 Log.d("ChatActivity update", "update");
+	            	if(dialog_from_db != dialog_from_inet);
+	            		runOnUiThread(needUpdateDialog);
+           	 }
+            }
+        }.start();
+   }
+    
+    Runnable needUpdateDialog=new Runnable(){
+        @Override
+        public void run() {
+        	dialog = dialog_from_inet;
+        	loadDialogDb(dialog_from_inet);
+        	
+        	m = new Message[dialog.size()];
+    		for(int i = 0; i<dialog.size(); i++ )
+    			m[dialog.size()-i-1]=dialog.get(i);
+    		
+    		adapter = new ChatAdapter(ChatActivity.this, m, checkedItems);
+    		adapter.notifyDataSetChanged();
+    		listView.setAdapter(adapter);
+    		listView.setSelection(dialog.size()-1);	
+        }
+    };
+    
     private void loadDialogDb(final ArrayList<Message> dialog) {
         new Thread(){
             @Override
             public void run(){
-            	db_dialog.addMessageToDialog(dialog, ChatActivity.this);
-            	Pref.setLoadedDialogDB(ChatActivity.this);
-            	db_dialog.close();
-            	Log.d("db_inserted", "db_inserted");
+            	//db_dialog.open();
+            	VK_ChatActivity.db_dialog.deleteChat(chat_id);
+            	VK_ChatActivity.db_dialog.addMessageToDialog(dialog, ChatActivity.this, chat_id+"");
+            	//Pref.setLoadedDialogDB(ChatActivity.this);
+            	//db_dialog.close();
+            	Log.d("db_inserted ChatActivity", "db_inserted");
             }
         }.start();
     }

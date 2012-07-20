@@ -11,6 +11,7 @@ public class Attachment {
     //public Photo posted_photo; 
     public Video video; 
     public Audio audio; 
+    public Doc doc;
 
     public static ArrayList<Attachment> parseAttachments(JSONArray attachments, long from_id, long copy_owner_id) throws JSONException {
         ArrayList<Attachment> attachments_arr=new ArrayList<Attachment>();
@@ -31,6 +32,8 @@ public class Attachment {
                 attachment.audio=Audio.parse(json_attachment.getJSONObject("audio"));
             if(attachment.type.equals("video"))
                 attachment.video=Video.parse(json_attachment.getJSONObject("video"));
+            if(attachment.type.equals("doc"))
+            	attachment.doc=Doc.parse(json_attachment.getJSONObject("doc"));
             attachments_arr.add(attachment);
         }
         return attachments_arr;

@@ -13,8 +13,10 @@ import vk.api.User;
 import vk.chat.ChatActivity;
 import vk.chat.R;
 import vk.dialog.AudioViewer;
+import vk.dialog.DocViewer;
 import vk.dialog.ForwardMessageViewer;
 import vk.dialog.PhotoViewer;
+import vk.dialog.VideoViewer;
 import vk.pref.Pref;
 import vk.utils.WorkWithTimeAndDate;
 import android.content.Context;
@@ -106,6 +108,8 @@ public class ChatAdapter extends ArrayAdapter<Message> {
 	        lpView.height = LayoutParams.WRAP_CONTENT;
 	        lpView.width = LayoutParams.WRAP_CONTENT;
 	        
+	        viewHolder.status.setVisibility(View.GONE);
+	        
 	        /*LayoutParams lpView3 = (LayoutParams) viewHolder.wrapper_right.getLayoutParams();
 	        lpView.gravity = Gravity.RIGHT;
 	        lpView.height = LayoutParams.WRAP_CONTENT;
@@ -115,7 +119,7 @@ public class ChatAdapter extends ArrayAdapter<Message> {
 	        if(Long.toString(values[position].uid).equals(userID)){
 	        	viewHolder.time_left.setVisibility(View.VISIBLE);
 	        	viewHolder.ava.setVisibility(View.GONE);
-	        	viewHolder.status.setVisibility(View.VISIBLE);
+	        	//viewHolder.status.setVisibility(View.VISIBLE);
 	        	viewHolder.time_left.setText(WorkWithTimeAndDate.getTime(values[position].date, context));	        	
 	        	//viewHolder.time_left.set
 	        	viewHolder.time_right.setVisibility(View.GONE);
@@ -126,7 +130,7 @@ public class ChatAdapter extends ArrayAdapter<Message> {
 	        	viewHolder.time_left.setVisibility(View.GONE);
 	        	viewHolder.time_right.setVisibility(View.VISIBLE);
 	        	viewHolder.ava.setVisibility(View.VISIBLE);
-	        	viewHolder.status.setVisibility(View.GONE);
+	        	
 	        	viewHolder.time_right.setText(WorkWithTimeAndDate.getTime(values[position].date, context));
 	        	//lpView.rightMargin = 30;
 	        	//lpView.leftMargin = 0;
@@ -169,8 +173,13 @@ public class ChatAdapter extends ArrayAdapter<Message> {
 	        	Log.d(TAG, "attachments");
 				for(Attachment att:values[position].attachments){
 					if(att.type.equals("photo")){
-						viewHolder.wrapper.addView(new PhotoViewer().getPhoto(parent, att, inflater));
+						viewHolder.wrapper.addView(new PhotoViewer().getPhoto(parent, att, inflater, context));
 						
+					}
+					
+					if(att.type.equals("doc")){		
+						//Log.d("videolink",att.video.link);
+						viewHolder.wrapper.addView(new DocViewer().getDoc(parent, att, inflater, context));
 					}
 					
 					if(att.type.equals("audio")){
@@ -188,17 +197,18 @@ public class ChatAdapter extends ArrayAdapter<Message> {
 //							//audio = (View) convertView.findViewWithTag(position);		
 //						if(viewHolderAudio != null)
 //							viewHolder.wrapper.addView(viewHolderAudio.audio);
-						viewHolder.wrapper.addView(new AudioViewer().getAudio(parent, att, inflater, this));
+						viewHolder.wrapper.addView(new AudioViewer().getAudio(parent, att, inflater, this, context));
 					}
 					
-					if(att.type.equals("video")){						
-						
+					if(att.type.equals("video")){		
+						Log.d("videolink",att.video.link);
+						viewHolder.wrapper.addView(new VideoViewer().getVideo(parent, att, inflater, context));
 					}
 				}			
 			}	        
 	        
 	        if(values[position].f_msgs != null){
-	        	Log.d(TAG, "attachments");
+	        	//Log.d(TAG, "attachments");
 				for(ForwardMessages att:values[position].f_msgs)
 					viewHolder.wrapper.addView(new ForwardMessageViewer().getForwardMessage(parent, inflater, att, context));		
 			}	       

@@ -41,13 +41,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import vk.chat.VK_ChatActivity;
 import vk.constants.Constants;
-import vk.utils.Base64;
-import vk.utils.MD5;
 import vk.utils.WrongResponseCodeException;
 
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.text.Html;
 import android.util.Log;
@@ -60,7 +58,7 @@ public class API {
 	//private String access_token="3c8616a539ec404439ec4044c439c1cc3f339ec39eb7cbb3dc0143b2f81d413";
 	private String access_token_nohttps = "699c8cef6cf6da0e6cf6da0e5b6cdb567576cf66cf6da0ecf565dc10839e9ca";
 	private String secret = "6dd8805b71b38c647d";
-	private String user_id = "90855137";
+	//private String user_id = "90855137";
 	private String url2 = "https://oauth.vk.com/token";
 	//private final static String sig = "488acf9a75a8f929eabc7f808b9f1d9b";
 	
@@ -362,7 +360,7 @@ public class API {
         return Html.fromHtml(text).toString();
     }
 	
-	public ArrayList<User> getFriends() throws MalformedURLException, IOException, JSONException{
+	public ArrayList<User> getFriends(String user_id) throws MalformedURLException, IOException, JSONException{
         Params params = new Params("friends.get");
         String fields="first_name,last_name,photo_rec,online,contacts";
         params.put("fields",fields);
@@ -391,8 +389,8 @@ public class API {
         Params params = new Params("messages.getDialogs");
         if (time_offset!=0)
             params.put("time_offset", time_offset);
-        if (count != 0)
-            params.put("count", count);
+        //if (count != 0)
+        //    params.put("count", count);
         params.put("preview_length","0");
         //JSONObject root = SendHttpPost(params);
         JSONObject root = sendRequest(params);
@@ -415,6 +413,10 @@ public class API {
         JSONObject root = sendRequest(params);
         Log.d("messages.getHistory", root.toString());
         JSONArray array = root.optJSONArray("response");
+        if(chat_id<=0)
+            params.put("uid",uid);
+        else
+            params.put("chat_id",chat_id);
         ArrayList<Message> messages = parseMessages(array, chat_id<=0, uid, chat_id>0);
         return messages;
     }
@@ -623,10 +625,110 @@ public class API {
         return root.getString("response");
     }
     
-    public void getPoll(String key, String server, Long ts) throws MalformedURLException, IOException, JSONException{
+    public Long getPoll(String key, String server, Long ts) throws MalformedURLException, IOException, JSONException{
     	String url = "http://"+server+"?act=a_check&key="+key+"&ts="+ts+"&wait=25&mode=2";
-    	Log.d("QWE", url);
-    	getLongPollInternal(url);
+    	Log.d("getPoll", url);
+    	JSONObject root=new JSONObject(sendRequestInternal(url));
+    	Log.d("getPoll", url);
+    	Log.d("getPoll", root.toString());
+
+        //JSONObject o1 = (JSONObject)root.get(0);
+        //J//SONObject o2 = (JSONObject)root.get(1); 
+
+    	Long ts_ = root.getLong("ts");
+    	Log.d("getPoll", ts_+"");
+    	JSONArray updates = root.optJSONArray("updates");
+    	parseUpdates(updates);
+    	
+    	Log.d("needUpdatesD, needUpdateOnlineFr, typing_chat, typing_user", 
+	    			VK_ChatActivity.needUpdateDialogs+" "+
+	    			VK_ChatActivity.needUpdateOnlineFriends+" "+
+	    			VK_ChatActivity.typing_chat.size()+" "+
+	    			VK_ChatActivity.typing_user.size()+" "
+    			);
+    	//Object [] updates = (Object[]) o2.opt("updates");
+    	
+    	//Log.d("getPoll", updates.toString());
+    	return ts_;
+    }
+    
+    public void parseUpdates(JSONArray updates) throws JSONException{
+    	VK_ChatActivity.needUpdateDialogs = false;
+    	VK_ChatActivity.needUpdateOnlineFriends = false;
+    	VK_ChatActivity.needUpdateTypingChat = false;
+    	VK_ChatActivity.needUpdateTypingUser = false;
+    	//VK_ChatActivity.needUpdateConv = false;
+    	VK_ChatActivity.typing_chat.clear();
+    	VK_ChatActivity.typing_user.clear();
+    	VK_ChatActivity.from_id.clear();
+    	
+    	if(updates==null)
+            return;
+    	//if(updates.length()==1){
+    		//JSONObject o = (JSONObject)updates.get(0);
+    	//}
+        int category_count=updates.length();
+        for(int i=0; i<category_count; ++i){
+        	if(updates.get(i) instanceof JSONArray){
+        		//Log.d("sub","sub");
+        		JSONArray sub = updates.getJSONArray(i);
+        		//Log.d("end_sub","end_sub");
+        		//String first_el = "";
+        		Log.d("class sub (0)",sub.get(0).getClass().toString());
+        		int first_el = sub.getInt(0);
+        		//Log.d("class",sub.get(0).getClass().toString());
+        		//Log.d("end_sub","end_sub");
+        		
+        		Log.d("class sub (1)",sub.get(1).getClass().toString());
+        		
+                if(first_el == 61){
+                	VK_ChatActivity.needUpdateTypingUser = true;
+                	VK_ChatActivity.typing_user.add(sub.getInt(1));
+                }
+                
+                if(first_el == 62){
+                	VK_ChatActivity.needUpdateTypingChat = true;
+                	VK_ChatActivity.typing_chat.add(sub.getInt(1));
+                }
+                
+                if(first_el ==8 || first_el == 9)
+                	VK_ChatActivity.needUpdateOnlineFriends = true;
+                
+                if(first_el ==4){
+                	VK_ChatActivity.needUpdateDialogs = true;
+                	VK_ChatActivity.needUpdateConv=true;
+                	VK_ChatActivity.from_id.add(sub.getInt(3));
+                }
+                //Log.d("end_sub","end_sub");
+                
+        		continue;
+        	} else {
+        		Log.d("not_sub","not_sub");
+        		int first_el = updates.getInt(0);
+        		
+        		Log.d("class updates (1)",updates.get(1).getClass().toString());
+        		
+        		if(first_el == 61){
+        			Log.d("class sub (1)",updates.get(1).getClass().toString());
+                	VK_ChatActivity.typing_user.add(updates.getInt(1));
+        		}
+                
+                if(first_el == 62)
+                	VK_ChatActivity.typing_chat.add(updates.getInt(1));
+	            
+	            if(first_el ==8 || first_el == 9)
+	            	VK_ChatActivity.needUpdateOnlineFriends = true;
+	            
+	            if(first_el ==4 || first_el == 0)
+	            	VK_ChatActivity.needUpdateDialogs = true;
+	            
+	            break;
+        	}
+            //String second_el = (String)updates.get(1);
+            
+            //User u = User.parse(o);
+            //users.add(u);
+        }
     }
     
     // работа с сообщениями 
@@ -874,4 +976,103 @@ public class API {
         return root.optLong("response");
     }
     
+    public void parseUpdates(Object updates){
+    	
+    	//Object [] array = (Object[]) updates;
+    	Log.d("parseUpdates", updates.getClass()+"");
+    	String str;
+    }
+    
+    public int getCountUnreadMessages() throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("messages.get");
+        params.put("filters","1");
+        JSONObject root = sendRequest(params);
+        JSONArray array = root.optJSONArray("response");
+        ArrayList<Message> messages = parseMessages(array, false, 0, false, 0);
+        Log.d("messagesUnRead", messages.size()+"");
+        return messages.size();
+    }
+    
+    private ArrayList<Message> parseMessages(JSONArray array, boolean from_history, long history_uid, boolean from_chat, long me) throws JSONException{
+        ArrayList<Message> messages = new ArrayList<Message>();
+        if (array != null) {
+            int category_count = array.length();
+            for(int i = 1; i < category_count; ++i) {
+                JSONObject o = (JSONObject)array.get(i);
+                Message m = Message.parse(o, from_history, history_uid, from_chat);
+                messages.add(m);
+            }
+        }
+        return messages;
+    }
+    
+    public ArrayList<Video> getVideo(Long vid, Long owner_id) throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("video.get");
+        params.put("videos", owner_id + "_" + vid);
+        JSONObject root = sendRequest(params);
+        JSONArray array = root.optJSONArray("response");
+        ArrayList<Video> videoss = new ArrayList<Video>();
+        if (array != null) {
+            for(int i = 1; i<array.length(); ++i) {
+                JSONObject o = (JSONObject)array.get(i);
+                Video video = Video.parse(o);
+                videoss.add(video);
+            }
+        }
+        return videoss;
+    }
+    
+    public ArrayList<Doc> getDoc(Long vid, Long owner_id) throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("docs.get");
+        params.put("oid", owner_id + "_" + vid);
+        JSONObject root = sendRequest(params);
+        JSONArray array = root.optJSONArray("response");
+        if(array!=null){
+	        ArrayList<Doc> videoss = new ArrayList<Doc>();
+	        if (array != null) {
+	            for(int i = 1; i<array.length(); ++i) {
+	                JSONObject o = (JSONObject)array.get(i);
+	                Doc doc = Doc.parse(o);
+	                videoss.add(doc);
+	            }
+	        }
+	        return videoss;
+        }
+        return null;
+    }
+    
+    public ArrayList<Message> searchMessages(String q) throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("messages.search");
+        params.put("q", q);
+        params.put("fields", "first_name,last_name,photo_rec,mutual,online,photo_medium");
+        JSONObject root = sendRequest(params);
+        JSONArray array=root.optJSONArray("response");
+        ArrayList<Message> messages = parseMessages(array, false, 0, false);
+        return messages;
+    }
+    
+    public Object[] getStatus(Long uid) throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("messages.getLastActivity");
+        params.put("uid", uid);
+        JSONObject root = sendRequest(params);
+        Log.d("messages.getLastActivity", root.toString());
+        JSONObject response = root.getJSONObject("response");
+        Log.d("messages.getLastActivity", response.toString());
+        if(response == null) return null;
+        int online=response.getInt("online");
+        Log.d("online", online+"");
+        
+        String time=response.getString("time");
+        Log.d("time", time);
+        return new Object[]{online, time};
+    }
+    
+    public String createChat(String uids, String title) throws MalformedURLException, IOException, JSONException{
+        Params params = new Params("messages.createChat");
+        Log.d("uids", uids);
+        params.put("uids", uids);
+        params.put("title", "title");       
+        JSONObject root = sendRequest(params);
+        return root.getString("response");
+    }
 }

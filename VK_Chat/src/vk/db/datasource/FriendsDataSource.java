@@ -2,8 +2,11 @@ package vk.db.datasource;
 
 import java.util.ArrayList;
 
+import vk.api.ForwardMessages;
 import vk.api.User;
+import vk.db.helpers.DialogSQLiteHelper;
 import vk.db.helpers.FriendsSQLiteHelper;
+import vk.db.helpers.FwdSQLiteHelper;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -24,7 +27,7 @@ public class FriendsDataSource {
 	};
 	
 	public FriendsDataSource(Context context) {
-		dbHelper = new FriendsSQLiteHelper(context);
+		dbHelper = FriendsSQLiteHelper.getInstance(context);
 	}
 	
 	public void open() throws SQLException {
@@ -33,6 +36,7 @@ public class FriendsDataSource {
 	
 	public void close() {
 		dbHelper.close();
+		database.close();
 	}
 	
 	public void deleteFriend(User friend) {
@@ -52,6 +56,22 @@ public class FriendsDataSource {
 			values.put(FriendsSQLiteHelper.COLUMN_MOBILEPHONE, friend.mobile_phone);
 			database.insert(FriendsSQLiteHelper.TABLE_FRIENDS, null, values);			
 		}
+	}
+	
+	public User getUserFromDB(Long uid){
+		User user = new User();
+		
+		String WHERE = FwdSQLiteHelper.COLUMN_UID + " = " + uid;
+
+		Cursor cursor = database.query(FriendsSQLiteHelper.TABLE_FRIENDS,
+				allColumns, WHERE, null, null, null, null);
+		if(cursor.moveToFirst()){
+			user = cursorToFriend(cursor);
+			cursor.close();
+			return user;
+		}
+		
+		return null;
 	}
 	
 	public ArrayList<User> getAllFriends() {
