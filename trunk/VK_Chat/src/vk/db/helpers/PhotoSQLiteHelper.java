@@ -6,6 +6,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class PhotoSQLiteHelper extends SQLiteOpenHelper {
 	
+	private static PhotoSQLiteHelper mInstance = null;
+	
 	//Fields
 	public static final String TABLE_PHOTO = "photo";
 	public static final String COLUMN_MID = "mid";
@@ -26,6 +28,13 @@ public class PhotoSQLiteHelper extends SQLiteOpenHelper {
 	public PhotoSQLiteHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	}
+	
+	public static PhotoSQLiteHelper getInstance(Context ctx) {
+        if (mInstance == null) {
+            mInstance = new PhotoSQLiteHelper(ctx.getApplicationContext());
+        }
+        return mInstance;
+    }
 		
 	@Override
 	public void onCreate(SQLiteDatabase database) {

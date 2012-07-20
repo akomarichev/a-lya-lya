@@ -107,7 +107,7 @@ public class ImageDownloaderFast {
             forceDownload(url, imageView, cookie);
         } else {
             cancelPotentialDownload(url, imageView);
-            imageView.setImageBitmap(bitmap);
+            imageView.setImageDrawable(new BitmapDrawable(getRoundedCornerImage(bitmap)));
         }
     }
 
@@ -324,7 +324,7 @@ public class ImageDownloaderFast {
                 // Change bitmap only if this process is still associated with it
                 if (this == bitmapDownloaderTask) {
                     //imageView.setImageResource(R.drawable.ava_background);
-                	imageView.setImageDrawable(new BitmapDrawable((bitmap)));
+                	imageView.setImageDrawable(new BitmapDrawable(getRoundedCornerImage(bitmap)));
                 }
             }
         }
@@ -359,26 +359,28 @@ public class ImageDownloaderFast {
         }
     }
     
-//    public static Bitmap getRoundedCornerImage(Bitmap bitmap) {
-//    	Bitmap output = Bitmap.createBitmap(bitmap.getWidth(),
-//    	    bitmap.getHeight(), Config.ARGB_8888);
-//    	Canvas canvas = new Canvas(output);
-//
-//    	final int color = 0xff424242;
-//    	final Paint paint = new Paint();
-//    	final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
-//    	final RectF rectF = new RectF(rect);
-//    	final float roundPx = 5;
-//
-//    	paint.setAntiAlias(true);
-//    	canvas.drawARGB(0, 0, 0, 0);
-//    	paint.setColor(color);
-//    	canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
-//
-//    	paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
-//    	canvas.drawBitmap(bitmap, rect, rect, paint);
-//
-//    	return output;
-//
-//    	}
+    public static Bitmap getRoundedCornerImage(Bitmap bitmap) {
+    	if(bitmap == null)
+  		  return null;
+    	Bitmap output = Bitmap.createBitmap(bitmap.getWidth(),
+    	    bitmap.getHeight(), Config.ARGB_8888);
+    	Canvas canvas = new Canvas(output);
+
+    	final int color = 0xff424242;
+    	final Paint paint = new Paint();
+    	final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+    	final RectF rectF = new RectF(rect);
+    	final float roundPx = 5;
+
+    	paint.setAntiAlias(true);
+    	canvas.drawARGB(0, 0, 0, 0);
+    	paint.setColor(color);
+    	canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
+
+    	paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
+    	canvas.drawBitmap(bitmap, rect, rect, paint);
+
+    	return output;
+
+    	}
 }

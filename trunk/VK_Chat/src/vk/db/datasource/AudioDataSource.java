@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 import vk.api.Audio;
 import vk.db.helpers.AudioSQLiteHelper;
+import vk.db.helpers.DialogSQLiteHelper;
+import vk.db.helpers.DocSQLiteHelper;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -16,6 +18,7 @@ public class AudioDataSource {
 	
 	private String[] allColumns = { 
 			AudioSQLiteHelper.COLUMN_MID,
+			AudioSQLiteHelper.COLUMN_AID,
 			AudioSQLiteHelper.COLUMN_ARTIST,
 			AudioSQLiteHelper.COLUMN_TITLE,
 			AudioSQLiteHelper.COLUMN_DURATION,
@@ -23,7 +26,7 @@ public class AudioDataSource {
 	};
 	
 	public AudioDataSource(Context context) {
-		dbHelper = new AudioSQLiteHelper(context);
+		dbHelper = AudioSQLiteHelper.getInstance(context);
 	}
 	
 	public void open() throws SQLException {
@@ -34,16 +37,16 @@ public class AudioDataSource {
 		dbHelper.close();
 	}
 	
-	/*public void deleteConversation(Audio Audio) {
-		String id = conversation.mid;
-		database.delete(AudioSQLiteHelper.TABLE_CONVERSATIONS, AudioSQLiteHelper.COLUMN_MID
-				+ " = " + id, null);
-	}*/
+	public void deleteAudio(String mid) {
+		database.delete(AudioSQLiteHelper.TABLE_AUDIO, AudioSQLiteHelper.COLUMN_MID
+				+ " = " + mid, null);
+	}
 	
 	public void addAudio(ArrayList<Audio> audios, String mid){
 		ContentValues values = new ContentValues();
 		for(Audio audio:audios){
 			values.put(AudioSQLiteHelper.COLUMN_MID, mid);
+			values.put(AudioSQLiteHelper.COLUMN_AID, audio.aid+"");
 			values.put(AudioSQLiteHelper.COLUMN_ARTIST, audio.artist);
 			values.put(AudioSQLiteHelper.COLUMN_TITLE, audio.title);
 			values.put(AudioSQLiteHelper.COLUMN_DURATION, audio.duration);
@@ -72,10 +75,11 @@ public class AudioDataSource {
 	
 	private Audio cursorToAudio(Cursor cursor) {
 		Audio audio = new Audio();
-		audio.artist = cursor.getString(1);
-		audio.title = cursor.getString(2);
-		audio.duration = cursor.getLong(3);
-		audio.url = cursor.getString(4);
+		audio.aid = Long.parseLong(cursor.getString(1));
+		audio.artist = cursor.getString(2);
+		audio.title = cursor.getString(3);
+		audio.duration = cursor.getLong(4);
+		audio.url = cursor.getString(5);
 		return audio;
 	}
 	

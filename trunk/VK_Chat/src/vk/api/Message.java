@@ -42,8 +42,11 @@ public class Message {
             m.title = API.unescape(o.getString("title"));
         m.body = API.unescape(o.getString("body"));
         m.read_state = o.getString("read_state");
-        if(o.has("chat_id"))
-            m.chat_id=o.getLong("chat_id");
+        if(o.has("chat_id")){
+        	m.chat_id=o.getLong("chat_id");
+        	Log.d("chat_id_messages", m.chat_id+"");
+        }
+            
 
         JSONArray attachments=o.optJSONArray("attachments");
         if(attachments!=null)

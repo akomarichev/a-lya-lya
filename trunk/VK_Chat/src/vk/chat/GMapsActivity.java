@@ -106,6 +106,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import vk.utils.WorkWithTimeAndDate;
+
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -325,7 +327,7 @@ public class GMapsActivity extends MapActivity {
    }  
 
    private void saveMapImage() throws IOException {  
-       String filename = "foo.png";  
+       String filename = "location_" + WorkWithTimeAndDate.getCurrentTime()+".png";  
        File f = new File(getExternalFilesDir(null), filename);  
        FileOutputStream out = new FileOutputStream(f);
        path = f.getAbsolutePath();

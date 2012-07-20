@@ -25,8 +25,19 @@ public class WorkWithTimeAndDate {
 		Days dd = Days.daysBetween(dt, now);
 		
 		if(dd.getDays() == 1)
-			return context.getResources().getString(R.string.yesterday).toString();
-		
+			return context.getResources().getString(R.string.yesterday).toString();		
 		return dt.toString(dtf);
+	}
+	
+	public static String getCurrentTime(){
+		DateTime now = new DateTime();
+		return Long.toString(now.getMillis());
+	}
+	
+	public static String convertToTime(String ms){
+		int milliseconds = Integer.parseInt(ms);
+		int seconds = (int) ((milliseconds) % 60);
+		int minutes = (int) ((milliseconds) / 60);
+		return minutes+":"+seconds;
 	}
 }

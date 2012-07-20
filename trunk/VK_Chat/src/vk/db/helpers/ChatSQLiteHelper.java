@@ -6,6 +6,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class ChatSQLiteHelper extends SQLiteOpenHelper {
 	
+	private static ChatSQLiteHelper mInstance = null;
+	
 	//Fields
 	public static final String TABLE_CHAT = "chat";
 	public static final String COLUMN_CHAT_ID = "chat_id";
@@ -37,6 +39,13 @@ public class ChatSQLiteHelper extends SQLiteOpenHelper {
 	public void onCreate(SQLiteDatabase database) {
 		database.execSQL(DATABASE_CREATE);		
 	}
+	
+	public static ChatSQLiteHelper getInstance(Context ctx) {
+        if (mInstance == null) {
+            mInstance = new ChatSQLiteHelper(ctx.getApplicationContext());
+        }
+        return mInstance;
+    }
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {

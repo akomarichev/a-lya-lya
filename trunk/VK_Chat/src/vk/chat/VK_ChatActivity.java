@@ -1,7 +1,12 @@
 package vk.chat;
 
+import java.util.ArrayList;
+
 import vk.api.API;
+import vk.api.User;
 import vk.constants.Constants;
+import vk.db.datasource.ChatDataSource;
+import vk.db.datasource.DialogDataSource;
 import vk.pref.Pref;
 
 import android.app.Activity;
@@ -12,9 +17,12 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -40,6 +48,24 @@ public class VK_ChatActivity extends TabActivity{
 	public static ImageView iv_notify_search;
 	public static TextView tv_notify_mess;
 	public static TextView tv_notify_search;
+	public static int status_mess = 0;
+	public static int status_search = 0;
+	
+	public static View mess;
+	public static View search;
+	private static Resources res;
+	public static DialogDataSource db_dialog;
+	
+	public static boolean needUpdateDialogs = false;
+	public static boolean needUpdateOnlineFriends = false;
+	public static boolean needUpdateTypingUser = false;
+	public static boolean needUpdateTypingChat = false;
+	public static boolean needUpdateConv = false;
+	public static ArrayList<Integer> typing_chat = new ArrayList<Integer>();
+	public static ArrayList<Integer> from_id = new ArrayList<Integer>();
+	public static ArrayList<Integer> typing_user = new ArrayList<Integer>();
+	
+	boolean  running = true;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -47,12 +73,19 @@ public class VK_ChatActivity extends TabActivity{
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.main);
         
+        api = new API(Pref.getAccessTokenHTTPS(VK_ChatActivity.this));
+        db_dialog = new DialogDataSource(this);
+        db_dialog.open();
+        
         if(!Pref.loggedIn(VK_ChatActivity.this)){
 	        Intent intent = new Intent();
 	        intent.setClass(VK_ChatActivity.this, LoginActivity.class);
 	        startActivity(intent);
 	        finish();
         } else{
+        	
+        	res = getResources();
+        	
         	tabHost = (TabHost) findViewById(android.R.id.tabhost);
             tabHost.setup();
 
@@ -69,8 +102,12 @@ public class VK_ChatActivity extends TabActivity{
 	        
 	        intent = new Intent().setClass(this, SettingsActivity.class);
 	        setupTabSett(new TextView(this), "stg", intent);
+	        
+	        connectToTheLonPollServer();
         }
     }
+    
+    
     
     private void setupTabMessages(final View view, final String tag, final Intent intent) {
 		View tabview = createTabViewMess(tabHost.getContext());
@@ -79,10 +116,10 @@ public class VK_ChatActivity extends TabActivity{
 	}
 
 	private static View createTabViewMess(final Context context) {
-		View view = LayoutInflater.from(context).inflate(R.layout.tab_mess, null);
-		iv_notify_mess = (ImageView) view.findViewById(R.id.iv_notify);
-		tv_notify_mess = (TextView) view.findViewById(R.id.tv_notify);
-		return view;
+		mess = LayoutInflater.from(context).inflate(R.layout.tab_mess, null);
+		iv_notify_mess = (ImageView) mess.findViewById(R.id.iv_notify);
+		tv_notify_mess = (TextView) mess.findViewById(R.id.tv_notify);
+		return mess;
 	}
 	
 	private void setupTabSearch(final View view, final String tag, final Intent intent) {
@@ -92,10 +129,10 @@ public class VK_ChatActivity extends TabActivity{
 	}
 
 	private static View createTabViewSearch(final Context context) {
-		View view = LayoutInflater.from(context).inflate(R.layout.tab_search, null);
-		iv_notify_search = (ImageView) view.findViewById(R.id.iv_notify);
-		tv_notify_search = (TextView) view.findViewById(R.id.tv_notify);
-		return view;
+		search = LayoutInflater.from(context).inflate(R.layout.tab_search, null);
+		iv_notify_search = (ImageView) search.findViewById(R.id.iv_notify);
+		tv_notify_search = (TextView) search.findViewById(R.id.tv_notify);
+		return search;
 	}
 	
 	private void setupTabFr(final View view, final String tag, final Intent intent) {
@@ -162,4 +199,120 @@ public class VK_ChatActivity extends TabActivity{
             }
         }
     }*/
+    
+    private void connectToTheLonPollServer(){
+        new Thread(){
+            @Override
+            public void run(){
+            	try{
+            		status_mess = api.getCountUnreadMessages();
+            		status_search = api.getRequestsFriends().length;
+            		runOnUiThread(updateMessageStatus);
+            		runOnUiThread(updateRequestsStatus);
+	            	Object[] parametrs;
+	        		parametrs = api.getLongPollServer();
+	        		Long ts = (Long) parametrs[2];
+	            	while(running){
+	
+		                	//String userID = Pref.getUserID(VK_ChatActivity.this);
+		                	//ArrayList<User> user = api.getUsers(userID);
+		                	//if(api.registerDevice().equals("1")){
+	            			//parametrs = api.getLongPollServer();
+		        			//Long ts = (Long) parametrs[2];
+		                	//Log.d("longpoll", "longpoll");
+		                	//Long ts2 = ts;
+		                	ts = api.getPoll((String) parametrs[0], (String) parametrs[1], ts);
+		                	///runOnUiThread(registered);       
+		                	//}
+		                	//else
+		                		//runOnUiThread(notRegistered);
+	            	}
+            	}
+	            catch(Exception e){
+	            	
+	            }
+            }
+        }.start();
+    }
+    
+    
+    
+    
+    public boolean onKeyDown(int keycode, KeyEvent event) {
+	    if (keycode == KeyEvent.KEYCODE_BACK || keycode == KeyEvent.KEYCODE_HOME) {
+	    	//db_dialog.close();
+	    	running = false;
+	    }
+	    return super.onKeyDown(keycode, event);
+	}
+    
+    @Override
+    protected void onStop() {
+    	//db_dialog.close();
+    	//running = false;
+    	super.onStop();
+    }
+    
+    @Override
+    protected void onDestroy() {
+    	//db_dialog.close();
+    	//db_dialog.
+    	running = false;
+    	super.onDestroy();
+    }
+    
+    @Override
+    protected void onRestart() {
+    	//db_dialog = new DialogDataSource(this);
+        db_dialog.open();
+    	running = true;
+    	super.onRestart();
+    }
+    
+    public static void setStatusMessages(int k){
+    	if(k==0){
+    		iv_notify_mess.setVisibility(View.INVISIBLE);
+    		tv_notify_mess.setVisibility(View.INVISIBLE);
+    	}
+    	else{
+    		tv_notify_mess.setText(k+"");
+    		iv_notify_mess.setVisibility(View.VISIBLE);
+    		tv_notify_mess.setVisibility(View.VISIBLE);
+    	}
+    	//tabHost.updateViewLayout(mess, null);
+    	//tabHost.updateViewLayout(search, null);
+    }
+    
+    public static void setStatusRequests(int k){
+    	if(k==0){
+    		iv_notify_search.setVisibility(View.INVISIBLE);
+    		tv_notify_search.setVisibility(View.INVISIBLE);
+    	}
+    	else{
+    		tv_notify_search.setText(k+"");
+    		iv_notify_search.setVisibility(View.VISIBLE);
+    		tv_notify_search.setVisibility(View.VISIBLE);
+    	}
+    	//tabHost.updateViewLayout(mess, null);
+    	//tabHost.updateViewLayout(search, null);
+    }
+    
+    Runnable updateMessageStatus=new Runnable(){
+        @Override
+        public void run() {
+        	setStatusMessages(status_mess);
+        }
+    };
+    
+    Runnable updateRequestsStatus=new Runnable(){
+        @Override
+        public void run() {
+        	setStatusRequests(status_search);
+        }
+    };
+    
+    
+    
+    
+
 }

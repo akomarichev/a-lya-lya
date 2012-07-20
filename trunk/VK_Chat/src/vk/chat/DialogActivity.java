@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 import org.json.JSONException;
@@ -21,6 +22,8 @@ import vk.horizontal.listview.ui.HorizontalListView;
 import vk.popup.ActionItem;
 import vk.popup.QuickAction;
 import vk.pref.Pref;
+import vk.utils.CheckConnection;
+import vk.utils.WorkWithTimeAndDate;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -37,6 +40,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -77,8 +81,13 @@ public class DialogActivity extends Activity {
 	
 	private static String photo_atts = "";
 	
+	public static boolean isDelivered = false;
+	public static int maxposition = -1;
+	
 	private int max_attaches = 3;
 	private int delete_position = -1;
+	
+	private boolean last_updating = false;
 	
 	private API api;
 	private Message m[];
@@ -106,6 +115,10 @@ public class DialogActivity extends Activity {
 	
 	private DialogAdapter adapter;
 	
+	ImageView online;
+	
+	private Object object[];
+	
 	private Button cancel;
 	private Button forward;
 	private Button delete;
@@ -122,7 +135,15 @@ public class DialogActivity extends Activity {
 	
 	
 	private ArrayList<Message> dialog;
-	private DialogDataSource db_dialog;
+	private ArrayList<Message> dialog_from_db;
+	private ArrayList<Message> dialog_from_inet;
+	
+	boolean running = true;
+	private View footerView;
+	private TextView footer;
+	
+	
+	//private DialogDataSource db_dialog;
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -131,7 +152,7 @@ public class DialogActivity extends Activity {
         setContentView(R.layout.dialog);
         
         //create db
-        db_dialog = new DialogDataSource(this);
+        //db_dialog = new DialogDataSource(this);
         
         
         
@@ -257,6 +278,7 @@ public class DialogActivity extends Activity {
         
 		listView = (ListView)findViewById(R.id.list_dialog);
         getDialog();   
+        updater();
 	}
 	
 	void setupHeaderUI(Long uid){
@@ -266,7 +288,8 @@ public class DialogActivity extends Activity {
 		ava = (ImageView) findViewById(R.id.iv_ava);
 		name = (TextView) findViewById(R.id.tv_user);
 		
-		loadAvaAndSetName(uid);
+		if(CheckConnection.isOnline(this))
+			loadAvaAndSetName(uid);
     }
 	
 	private class MyListAdapter extends BaseAdapter {  
@@ -375,6 +398,9 @@ public class DialogActivity extends Activity {
     
     
     public void setupUI(){
+    	online = (ImageView) findViewById(R.id.iv_online);
+    	online.setVisibility(View.GONE);
+    	
     	cancel = (Button) rowViewHeaderButton.findViewById(R.id.header_b_cancel);
     	cancel.setOnClickListener(cancelClick);
     	forward = (Button) rowViewHeaderButton.findViewById(R.id.header_b_forward);
@@ -445,7 +471,9 @@ public class DialogActivity extends Activity {
 			header.setVisibility(View.VISIBLE);
 			dialog_linear_layout.removeView(rowViewHeaderButton);
 			header_bottons = false;
-        	getDialog();
+        	//getDialog();
+			VK_ChatActivity.needUpdateConv = true;
+			updateDialog();
         	adapter.notifyDataSetChanged();
             Toast.makeText(getApplicationContext(), getResources().getString(R.string.vd_success_deleted), Toast.LENGTH_LONG).show();
         }
@@ -462,6 +490,7 @@ public class DialogActivity extends Activity {
 		@Override
 		public void onClick(View v) {
 			try{
+				isDelivered = false;
 				conv_attach.setBackgroundResource(R.anim.loader_grey);
 				loader = (AnimationDrawable) conv_attach.getBackground();
 				conv_attach.setClickable(false);
@@ -517,7 +546,10 @@ public class DialogActivity extends Activity {
         	loader.stop();
         	conv_attach.setBackgroundResource(R.drawable.attach);
         	conv_attach.setClickable(true);
-        	getDialog();
+        	isDelivered = true;
+        	//getDialog();
+        	updateDialog();
+        	
         	adapter.notifyDataSetChanged();
         	photo_atts = "";
             Toast.makeText(getApplicationContext(), getResources().getString(R.string.vd_success_sent), Toast.LENGTH_LONG).show();
@@ -527,6 +559,8 @@ public class DialogActivity extends Activity {
 	Runnable notSuccessSent=new Runnable(){
         @Override
         public void run() {
+        	isDelivered = false;
+        	maxposition = -1;  
         	loader.stop();
         	conv_attach.setBackgroundResource(R.drawable.attach);
         	conv_attach.setClickable(true);
@@ -535,36 +569,33 @@ public class DialogActivity extends Activity {
     };
     
     private void getDialog(){    	
-//    	db_dialog.open();
-//    	
-//    	Log.d("db_inserts", "db_inserts");
-//    	
-//    	//Pref.cancelLoadedDialogDB(DialogActivity.this);
-//    	
-//    	if(!Pref.loadedDialogDB(DialogActivity.this)){
-    		try{
-            	if(chat_id != 0)
-            		dialog = api.getMessagesHistory(0, chat_id, (long) 0, 100);
-            	else
-            		dialog = api.getMessagesHistory(user_id, -20, (long) 0, 100);		
-    		} catch (Exception e){
-    			e.printStackTrace();
-    		} 
-//        	db_dialog.removeAll();
-//        	loadDialogDb(dialog);
-//        }
+    	//VK_ChatActivity.db_dialog.open();
+    	
+    	Log.d("db_inserts", "db_inserts");
+    	
+    	//Pref.cancelLoadedDialogDB(DialogActivity.this);
+    	
+    	//if(!Pref.loadedDialogDB(DialogActivity.this)){
+    		
+    		dialog_from_db = VK_ChatActivity.db_dialog.getUserDialog(user_id, this);
+    		//db_dialog.close();
+    		updateDialog();
+        	//db_dialog.removeAll();
+        	//loadDialogDb(dialog);
+        //}
 //        else{
 //        	dialog = db_dialog.getUserDialog(user_id, DialogActivity.this);
 //        	db_dialog.close();
 //        }
-        
+        dialog = dialog_from_db;
         m = new Message[dialog.size()];
 		for(int i = 0; i<dialog.size(); i++ )
 			m[dialog.size()-i-1]=dialog.get(i);
 		
 		adapter = new DialogAdapter(this, m, checkedItems);
 		if(!footerAdded){
-			View footerView = ((LayoutInflater)this.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.listitem_dialog_footer, null, false);
+			footerView = ((LayoutInflater)this.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.listitem_dialog_footer, null, false);
+			footer = (TextView) footerView.findViewById(R.id.tv_footer);
 			listView.addFooterView(footerView);
 			footerAdded = true;
 		}
@@ -600,13 +631,117 @@ public class DialogActivity extends Activity {
 		});
     }
     
+    private void updateDialog(){
+    	 new Thread(){
+             @Override
+             public void run(){
+            	 if(CheckConnection.isOnline(DialogActivity.this)){
+            		//db_dialog.open();
+            	    dialog_from_db = VK_ChatActivity.db_dialog.getUserDialog(user_id, DialogActivity.this);
+            	    //db_dialog.close();
+	            	 try{
+	                 	if(chat_id != 0)
+	                 		dialog_from_inet = api.getMessagesHistory(0, chat_id, (long) 0, 100);
+	                 	else
+	                 		dialog_from_inet = api.getMessagesHistory(user_id, -20, (long) 0, 100);		
+	         		} catch (Exception e){
+	         			e.printStackTrace();
+	         		} 
+	            	if(dialog_from_db != dialog_from_inet){
+	            		runOnUiThread(needUpdateDialog);
+	            		dialog = dialog_from_inet;
+	                	dialog_from_db = dialog_from_inet;
+	                	//loadDialogDb(dialog_from_db);
+	                	
+	                	/*m = new Message[dialog.size()];
+	            		for(int i = 0; i<dialog.size(); i++ )
+	            			m[dialog.size()-i-1]=dialog.get(i);
+	            		
+	            		adapter = new DialogAdapter(DialogActivity.this, m, checkedItems);
+	            		adapter.notifyDataSetChanged();
+	            		listView.setAdapter(adapter);
+	            		listView.setSelection(dialog.size()-1);*/
+	            		
+	            		//db_dialog.open();
+	                	//db_dialog.deleteDialogWithUser(user_id);
+	                	//db_dialog.addMessageToDialog(dialog, DialogActivity.this, null);
+	                	//Pref.setLoadedDialogDB(DialogActivity.this);
+	                	//db_dialog.close();
+	            		
+	            	}
+	            		
+            	 }
+             }
+         }.start();
+    }
+    
+    Runnable needUpdateDialog=new Runnable(){
+        @Override
+        public void run() {
+        	dialog = dialog_from_inet;
+        	dialog_from_db = dialog_from_inet;
+        	loadDialogDb(dialog_from_db);
+        	
+        	m = new Message[dialog.size()];
+    		for(int i = 0; i<dialog.size(); i++ )
+    			m[dialog.size()-i-1]=dialog.get(i);
+    		
+    		maxposition = m.length-1;
+    		
+    		adapter = new DialogAdapter(DialogActivity.this, m, checkedItems);
+    		adapter.notifyDataSetChanged();
+    		listView.setAdapter(adapter);
+    		listView.setSelection(dialog.size()-1);
+    		
+    		/*db_dialog.open();
+        	db_dialog.deleteDialogWithUser(user_id);
+        	db_dialog.addMessageToDialog(dialog, DialogActivity.this, null);
+        	//Pref.setLoadedDialogDB(DialogActivity.this);
+        	db_dialog.close();*/
+    		
+    		markAsRead();
+        }
+    };
+    
+    private void markAsRead() {
+        new Thread(){
+            @Override
+            public void run(){
+            	ArrayList<Long> needRead = new ArrayList<Long>();
+            	Log.d("needREad",needRead.size()+"");
+            	//String needread = "";
+            	for(int i=0; i<m.length; i++)
+            		if(!m[i].is_out)
+            			if(m[i].read_state.equals("0"))
+            				needRead.add(Long.parseLong(m[i].mid));
+            	try {
+            		Log.d("needREad",needRead.size()+"");
+            		if(needRead.size()!= 0)
+            			VK_ChatActivity.needUpdateConv = true;
+					api.markAsNewOrAsRead(needRead, true);
+				} catch (MalformedURLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+            }
+        }.start();
+    }
+    
     private void loadDialogDb(final ArrayList<Message> dialog) {
         new Thread(){
             @Override
             public void run(){
-            	db_dialog.addMessageToDialog(dialog, DialogActivity.this);
-            	Pref.setLoadedDialogDB(DialogActivity.this);
-            	db_dialog.close();
+            	//db_dialog.open();
+            	VK_ChatActivity.db_dialog.deleteDialogWithUser(user_id);
+            	VK_ChatActivity.db_dialog.addMessageToDialog(dialog, DialogActivity.this, null);
+            	//Pref.setLoadedDialogDB(DialogActivity.this);
+            	//db_dialog.close();
             	Log.d("db_inserted", "db_inserted");
             }
         }.start();
@@ -757,8 +892,163 @@ public class DialogActivity extends Activity {
 	Runnable successGetDialogUser=new Runnable(){
         @Override
         public void run() {
-        	downloader.download(dialog_user.get(0).photo_rec, ava);
-        	name.setText(dialog_user.get(0).first_name + " " + dialog_user.get(0).last_name);
+        	if(CheckConnection.isOnline(DialogActivity.this)){
+        		downloader.download(dialog_user.get(0).photo_rec, ava);
+        		name.setText(dialog_user.get(0).first_name + " " + dialog_user.get(0).last_name);
+        	}
         }
     };
+    
+    
+    private void updater() {
+        new Thread(){
+            @Override
+            public void run(){
+            	updateNotTyping();
+            	while(running){
+            		if(VK_ChatActivity.needUpdateTypingUser){
+            			boolean needUpdate = false;
+            			
+            			for(int i:VK_ChatActivity.typing_user){
+            				Log.d("user_id",user_id+"");
+                			Log.d("user",i+"");
+            				if(i == user_id)
+            					needUpdate = true;
+            			}
+            			if(needUpdate){
+            				if(last_updating != VK_ChatActivity.needUpdateTypingUser){
+            					//VK_ChatActivity.needUpdateTypingUser = false;
+            					//VK_ChatActivity.needUpdateTypingUser = false;
+            					last_updating = VK_ChatActivity.needUpdateTypingUser;
+            					runOnUiThread(userTyping);
+            				}
+            			}
+            		}
+            		else{
+            			if(last_updating != VK_ChatActivity.needUpdateTypingUser && VK_ChatActivity.needUpdateTypingUser==false){
+            				//runOnUiThread(notTyping);
+            				updateNotTyping();
+            				last_updating = VK_ChatActivity.needUpdateTypingUser;
+            			}
+            		}
+            		try {
+						Thread.sleep(500);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+            		
+            		if(VK_ChatActivity.needUpdateDialogs){
+            			boolean needUpdate = false;
+            			
+            			for(int i:VK_ChatActivity.from_id)
+            				if(i == user_id)
+            					needUpdate = true;
+            			if(needUpdate){
+            				
+            				runOnUiThread(updateDialog);
+            				VK_ChatActivity.needUpdateDialogs = false;
+            			}
+            		}
+	    			try {
+	    				Thread.sleep(500);
+	    			} catch (InterruptedException e) {
+	    				e.printStackTrace();
+	    			} 
+	    			
+	    			
+	    			
+	    			//runOnUiThread(notTyping);
+//	            	Log.d("updater chatlistactivity", "updater");
+//	            	if(Pref.isSetNeedUpdateDialogActivity(DialogActivity.this)){
+//	            		//runOnUiThread(updateActivity);
+//	        			runOnUiThread(needUpdateDialog);
+//	        			Pref.resetNeedUpdateDialogActivity(DialogActivity.this);
+//	        		}
+//	    			try {
+//	    				Thread.sleep(500);
+//	    			} catch (InterruptedException e) {
+//	    				e.printStackTrace();
+//	    			}      
+            	}
+            }
+        }.start();
+    }
+    
+    private void updateNotTyping() {
+        new Thread(){
+            @Override
+            public void run(){
+            	try {
+    				object = api.getStatus(user_id);
+    			} catch (Exception e) {
+    				e.printStackTrace();
+    			}
+            	if(object != null)
+            		runOnUiThread(notTyping);
+            }
+        }.start();
+    }
+    
+    Runnable userTyping=new Runnable(){
+        @Override
+        public void run() {
+        	footer.setText(getResources().getString(R.string.vd_user_typing));
+        	adapter.notifyDataSetChanged();
+        }
+    };
+    
+    Runnable notTyping=new Runnable(){
+        @Override
+        public void run() {
+	        	int onlin = (Integer) object[0];
+	        	String time = (String) object [1];
+	        	if(onlin==1){
+	        		online.setVisibility(View.VISIBLE);
+	        		footer.setText("");
+	        	}
+	        	else{
+	        		online.setVisibility(View.GONE);
+	        		footer.setText(WorkWithTimeAndDate.getTime(time, DialogActivity.this) +" "+ getResources().getString(R.string.vd_user_was_begin));
+	        	}
+	        	adapter.notifyDataSetChanged();
+        }
+    };
+    
+    Runnable updateDialog=new Runnable(){
+        @Override
+        public void run() {
+        	updateDialog();
+        	adapter.notifyDataSetChanged();
+        }
+    };
+    
+    public boolean onKeyDown(int keycode, KeyEvent event) {
+	    if (keycode == KeyEvent.KEYCODE_BACK || keycode == KeyEvent.KEYCODE_HOME) {
+	    	isDelivered = false;
+	    	running = false;
+	    }
+	    return super.onKeyDown(keycode, event);
+	}
+    
+    @Override
+    protected void onStop() {
+    	isDelivered = false;
+    	running = false;
+    	super.onStop();
+    }
+    
+    @Override
+    protected void onDestroy() {
+    	isDelivered = false;
+    	running = false;
+    	super.onDestroy();
+    }
+    
+    @Override
+    protected void onRestart() {
+    	running = true;
+    	updater();
+    	super.onRestart();
+    }
 }

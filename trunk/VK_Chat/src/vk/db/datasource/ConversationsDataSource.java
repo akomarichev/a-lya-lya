@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import vk.api.Message;
 import vk.api.User;
 import vk.db.helpers.ConversationsSQLiteHelper;
+import vk.db.helpers.DialogSQLiteHelper;
 import vk.db.helpers.FriendsSQLiteHelper;
 import android.content.ContentValues;
 import android.content.Context;
@@ -28,7 +29,7 @@ public class ConversationsDataSource {
 	};
 	
 	public ConversationsDataSource(Context context) {
-		dbHelper = new ConversationsSQLiteHelper(context);
+		dbHelper = ConversationsSQLiteHelper.getInstance(context);
 	}
 	
 	public void open() throws SQLException {

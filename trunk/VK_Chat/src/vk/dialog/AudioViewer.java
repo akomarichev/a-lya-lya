@@ -6,6 +6,7 @@ import vk.adapters.DialogAdapter;
 import vk.api.Attachment;
 import vk.api.Audio;
 import vk.chat.R;
+import vk.utils.CheckConnection;
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -29,29 +30,36 @@ public class AudioViewer implements OnClickListener, OnTouchListener, OnCompleti
 	private Audio audio;
 	private ImageView play_image;
 	public MediaPlayer mediaPlayer;
-	public SeekBar seekBar;
-	public static SeekBar static_seekBar; 
+	public static SeekBar seekBar;
+	public static SeekBar not_static_seekBar; 
 	public static Long isPlaying = 0L; 
 	public static MediaPlayer playingMediaPlayer;
-	public ArrayAdapter adapter;
 	
 	public static int progress;
 	
 	private TextView tv_artist;
 	private TextView tv_song;
+	private ArrayAdapter adapter;
 	
 	private final Handler handler = new Handler();
 	private static int mediaFileLengthInMilliseconds;
 	
-	public View getAudio(ViewGroup parent, Attachment att, LayoutInflater inflater, ArrayAdapter adapter){
+	public View getAudio(ViewGroup parent, Attachment att, LayoutInflater inflater, ArrayAdapter adapter, Context context){
     	View rowViewAudio = inflater.inflate(R.layout.audio, parent, false);
     	audio = new Audio();
     	audio = att.audio;
-    	this.adapter = adapter;
     	//initViewAudio(rowViewAudio, att);
     	//initMediaPlayer();	
     	//
+    	tv_artist = (TextView) rowViewAudio.findViewById(R.id.audio_artist);
+		tv_song = (TextView) rowViewAudio.findViewById(R.id.audio_song);		
+		
+		tv_artist.setText(audio.artist);
+		tv_song.setText(audio.title);
+    	this.adapter = adapter;
+    	if(CheckConnection.isOnline(context))
     		initView(rowViewAudio);
+    	
     	//}
 		return rowViewAudio;	    	
     }
@@ -70,16 +78,18 @@ public class AudioViewer implements OnClickListener, OnTouchListener, OnCompleti
 		else 
 			play_image.setImageResource(R.drawable.audio_play);
 		
-		seekBar = (SeekBar)rowViewAudio.findViewById(R.id.seekBar);
-		seekBar.setMax(99); // It means 100% .0-99
-		seekBar.setOnTouchListener(this);
+		not_static_seekBar = (SeekBar)rowViewAudio.findViewById(R.id.seekBar);
+		//seekBar.setMax(99); // It means 100% .0-99
+		//seekBar.setOnTouchListener(this);
+		//static_seekBar = seekBar;
+		not_static_seekBar.setMax(99);
+		not_static_seekBar.setOnTouchListener(this);
+		if(isPlaying == audio.aid || isPlaying == 0L){
+			seekBar = not_static_seekBar;
+		}
 		
 		
-		tv_artist = (TextView) rowViewAudio.findViewById(R.id.audio_artist);
-		tv_song = (TextView) rowViewAudio.findViewById(R.id.audio_song);		
 		
-		tv_artist.setText(audio.artist);
-		tv_song.setText(audio.title);
 		
 		initMediaFirst();
 		
@@ -98,12 +108,12 @@ public class AudioViewer implements OnClickListener, OnTouchListener, OnCompleti
 	    		playingMediaPlayer.setOnBufferingUpdateListener(this);
 	    		playingMediaPlayer.setOnCompletionListener(this);
 	    		
-	    		static_seekBar = seekBar;
+	    		//static_seekBar = seekBar;
 			}
 		}
     	else {
 			mediaPlayer = playingMediaPlayer;
-			seekBar = static_seekBar;
+			//seekBar = static_seekBar;
 			//mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
     		//mediaPlayer.setOnBufferingUpdateListener(this);
     		//mediaPlayer.setOnCompletionListener(this);
@@ -130,11 +140,11 @@ public class AudioViewer implements OnClickListener, OnTouchListener, OnCompleti
 	    		playingMediaPlayer.setOnBufferingUpdateListener(this);
 	    		playingMediaPlayer.setOnCompletionListener(this);
 	    		
-	    		static_seekBar = seekBar;
+	    		//static_seekBar = seekBar;
 		}
 		else{
 			mediaPlayer = playingMediaPlayer;
-			seekBar = static_seekBar;
+			//seekBar = static_seekBar;
 		}
 		//seekBar = static_seekBar;	
     		//seekBar.setMax(99); // It means 100% .0-99
@@ -149,7 +159,7 @@ public class AudioViewer implements OnClickListener, OnTouchListener, OnCompleti
 			//mediaPlayer = playingMediaPlayer;
     	if(audio.aid == isPlaying){
     		mediaPlayer = playingMediaPlayer;
-    		seekBar = static_seekBar;
+    		//seekBar = static_seekBar;
     	progress = (int)(((float)mediaPlayer.getCurrentPosition()/mediaFileLengthInMilliseconds)*100);
     	seekBar.setProgress(progress); // This math construction give a percentage of "was playing"/"song length"
 		if (mediaPlayer.isPlaying()) {
@@ -166,7 +176,7 @@ public class AudioViewer implements OnClickListener, OnTouchListener, OnCompleti
 	@Override
 	public void onClick(View v) {
 		//Log.d("audioclick","pressed");
-		static_seekBar=seekBar;
+		//static_seekBar=seekBar;
 		if(isPlaying == 0L || audio.aid != isPlaying){
 			initMedia();
 			isPlaying = audio.aid;			
@@ -190,8 +200,8 @@ public class AudioViewer implements OnClickListener, OnTouchListener, OnCompleti
 				mediaPlayer.pause();
 				play_image.setImageResource(R.drawable.audio_play);
 			}
-			//playingMediaPlayer = mediaPlayer;
 			adapter.notifyDataSetChanged();
+			//playingMediaPlayer = mediaPlayer;
 			primarySeekBarProgressUpdater();
 		}
 	}
@@ -201,7 +211,7 @@ public class AudioViewer implements OnClickListener, OnTouchListener, OnCompleti
 		//Log.d("audiotouch","pressed");
 		//initMedia();
 		if(audio.aid == isPlaying){
-			seekBar = static_seekBar;
+			//seekBar = static_seekBar;
     		mediaPlayer = playingMediaPlayer;
 			if(v.getId() == R.id.seekBar){
 				/** Seekbar onTouch event handler. Method which seeks MediaPlayer to seekBar primary progress position*/
@@ -223,7 +233,6 @@ public class AudioViewer implements OnClickListener, OnTouchListener, OnCompleti
 		play_image.setImageResource(R.drawable.audio_play);
     	if(playingMediaPlayer != null)
     		playingMediaPlayer.reset();
-    	adapter.notifyDataSetChanged();
 		//mediaPlayer.reset();
 	}
 

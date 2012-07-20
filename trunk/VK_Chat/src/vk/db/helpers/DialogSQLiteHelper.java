@@ -6,6 +6,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DialogSQLiteHelper extends SQLiteOpenHelper {
 	
+	private static DialogSQLiteHelper mInstance = null;
+	private Context mCxt;
+	
 	//Fields
 	public static final String TABLE_DIALOG = "t_dialog";
 	public static final String COLUMN_MID = "mid";
@@ -37,7 +40,15 @@ public class DialogSQLiteHelper extends SQLiteOpenHelper {
 	
 	public DialogSQLiteHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
+		this.mCxt = context;
 	}
+	
+	public static DialogSQLiteHelper getInstance(Context ctx) {
+        if (mInstance == null) {
+            mInstance = new DialogSQLiteHelper(ctx.getApplicationContext());
+        }
+        return mInstance;
+    }
 		
 	@Override
 	public void onCreate(SQLiteDatabase database) {

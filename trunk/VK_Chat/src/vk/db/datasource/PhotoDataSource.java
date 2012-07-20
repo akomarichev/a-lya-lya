@@ -29,7 +29,7 @@ public class PhotoDataSource {
 	};
 	
 	public PhotoDataSource(Context context) {
-		dbHelper = new PhotoSQLiteHelper(context);
+		dbHelper = PhotoSQLiteHelper.getInstance(context);
 	}
 	
 	public void open() throws SQLException {

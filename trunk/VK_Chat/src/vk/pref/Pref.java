@@ -237,6 +237,33 @@ public class Pref {
 	}
 	
 	
+	public static void setNeedUpdateDialogActivity(Context c){
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+        Editor editor=prefs.edit();
+        editor.putBoolean(UPD_DIALOG, true);
+        editor.commit();
+	}
+	
+    public static void resetNeedUpdateDialogActivity(Context c){
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+        Editor editor=prefs.edit();
+        editor.putBoolean(UPD_DIALOG, false);
+        editor.commit();
+	}
+    
+	public static Boolean isSetNeedUpdateDialogActivity(Context c){
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+		return prefs.getBoolean(UPD_DIALOG, false);
+	} 
+	
+	public static void deleteNeedUpdateDialogActivity(Context c){
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_NAME, c.MODE_WORLD_READABLE|c.MODE_WORLD_WRITEABLE);
+        Editor editor=prefs.edit();
+        editor.remove(UPD_DIALOG);
+        editor.commit();
+	}
+	
+	
 	// *************************** END UPDATERS ******************************* //
 	
 	

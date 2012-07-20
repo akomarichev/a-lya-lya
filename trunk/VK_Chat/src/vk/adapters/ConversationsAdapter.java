@@ -33,6 +33,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class ConversationsAdapter extends ArrayAdapter<Message> {	
@@ -44,13 +45,18 @@ public class ConversationsAdapter extends ArrayAdapter<Message> {
     public ImageDownloader loader;
     public API api;
     public ArrayList<User> chat_users = new ArrayList();
+    public ArrayList<User> users = new ArrayList<User>();
     private ChatDataSource db_chatUsers;
     ViewHolderChat viewHolderChat = new ViewHolderChat();
+    private FriendsDataSource db_friends;
+    private User user;
     
     
     
     static class ViewHolder {
 		public TextView text;
+		public TextView name;
+		public RelativeLayout layout;
 		public ImageView image_ava;
 		public ImageView image_online;
 		public TextView time;
@@ -58,10 +64,11 @@ public class ConversationsAdapter extends ArrayAdapter<Message> {
     
     static class ViewHolderChat{
     	public TextView text;
+    	public TextView sub;
 		public ImageView image_ava1;
 		public ImageView image_ava2;
 		public ImageView image_ava3;
-		public ImageView image_ava4;		
+		public ImageView image_ava4;
     }
 
     public ConversationsAdapter(Context context, Message[] objects) {
@@ -71,7 +78,7 @@ public class ConversationsAdapter extends ArrayAdapter<Message> {
         this.inflater = (LayoutInflater) this.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         loader =  new ImageDownloader();
         api = new API(Pref.getAccessTokenHTTPS(context));
-        //db
+        db_friends = new FriendsDataSource(context);
         db_chatUsers = new ChatDataSource(context);
         
     }
@@ -88,11 +95,12 @@ public class ConversationsAdapter extends ArrayAdapter<Message> {
     	
     	switch(viewType){
 	    	case 1:
-	    		ViewHolder viewHolder = new ViewHolder();
+	    		final ViewHolder viewHolder = new ViewHolder();
 		        //if((convertView == null)){
 		        	convertView = inflater.inflate(R.layout.dialog_list, parent, false);
-		        	
+		        	viewHolder.layout = (RelativeLayout) convertView.findViewById(R.id.layout);
 					viewHolder.text = (TextView) convertView.findViewById(R.id.iv_conv_last_message);
+					viewHolder.name = (TextView) convertView.findViewById(R.id.iv_conv_user_name);
 					viewHolder.image_ava = (ImageView) convertView.findViewById(R.id.iv_conv_avatar);
 					viewHolder.image_online = (ImageView) convertView.findViewById(R.id.iv_conv_online);
 					viewHolder.time = (TextView) convertView.findViewById(R.id.tv_time);
@@ -105,15 +113,55 @@ public class ConversationsAdapter extends ArrayAdapter<Message> {
 		        viewHolder.image_ava.setImageResource(R.drawable.contact_nophoto);
 		        viewHolder.time.setText(WorkWithTimeAndDate.getTime(values[position].date, context));
 		        viewHolder.image_online.setBackgroundResource(R.drawable.online_list);
-		        viewHolder.image_ava.setTag(values[position]);
+		        if(values[position].read_state.equals("0"))
+		        	viewHolder.layout.setBackgroundResource(R.drawable.item_list_not_read);
+		        
+		        db_friends.open();
+		        user = db_friends.getUserFromDB(values[position].uid);
+		        db_friends.close();
+		        
+		        if(user != null){
+		        	viewHolder.image_ava.setTag(values[position]);
+	            	loader.download(user.photo_rec, viewHolder.image_ava);
+	            	viewHolder.name.setText(user.first_name + " " + user.last_name);
+	            	if(user.online == true){
+	            		viewHolder.image_online.setVisibility(View.VISIBLE);
+			        }
+			        else{
+			        	viewHolder.image_online.setVisibility(View.GONE);
+			        }
+		        }
+		        else		        
+			        new AsyncTask<Context, Void, Void>() {
+	
+				        @Override
+				        protected Void doInBackground(Context... params) {
+				        	try {
+		    					users = api.getUsers(values[position].uid+"");
+			                } catch (Exception e) {
+			                    e.printStackTrace();
+			                }	
+				                return null;
+				            } 
+				        
+				            @Override
+				            public void onPostExecute(Void result){			            	
+				            	viewHolder.image_ava.setTag(values[position]);
+				            	if(users != null && users.size() != 0){
+				            		loader.download(users.get(0).photo_rec, viewHolder.image_ava);
+				            		viewHolder.name.setText(users.get(0).first_name + " " + users.get(0).last_name);
+//				            		if(users.get(0).online == true){
+//				                    	viewHolder.image_online.setVisibility(View.VISIBLE);
+//				                    }
+//				                    else{
+//				                    	viewHolder.image_online.setVisibility(View.INVISIBLE);
+//				                    }
+				            	}
+				            }
+				       }.execute();
 		        //loader.download(chat_users.get(0).photo_rec, viewHolderChat.image_ava1);
-		        /*Log.d("Online",values[position].online.toString());
-		        if(values[position].online == true){
-		        	viewHolder.image_online.setBackgroundResource(R.drawable.online_list);
-		        }
-		        else{
-		        	viewHolder.image_online.setBackgroundColor(Color.BLACK);
-		        }
+		        //Log.d("Online",values[position].online.toString());
+		        /*
 		        viewHolder.image_ava.setTag(values[position].photo_rec);
 		        loader.download(values[position].photo_rec, viewHolder.image_ava);*/
 		        return convertView;
@@ -126,6 +174,10 @@ public class ConversationsAdapter extends ArrayAdapter<Message> {
 					viewHolderChat.image_ava2 = (ImageView) convertView.findViewById(R.id.iv_ava_2);
 					viewHolderChat.image_ava3 = (ImageView) convertView.findViewById(R.id.iv_ava_3);
 					viewHolderChat.image_ava4 = (ImageView) convertView.findViewById(R.id.iv_ava_4);
+					viewHolderChat.text = (TextView) convertView.findViewById(R.id.iv_chat_theme);
+					viewHolderChat.text.setText(values[position].title);
+					viewHolderChat.sub = (TextView) convertView.findViewById(R.id.iv_conv_last_message);
+					viewHolderChat.sub.setText(values[position].body);
 					convertView.setTag(viewHolderChat);
 					
 					
@@ -169,7 +221,7 @@ public class ConversationsAdapter extends ArrayAdapter<Message> {
 							        loader.download(chat_users.get(1).photo_rec, viewHolderChat.image_ava2);
 							        viewHolderChat.image_ava3.setTag(chat_users.get(2).photo_rec);
 							        loader.download(chat_users.get(2).photo_rec, viewHolderChat.image_ava3);
-							        viewHolderChat.image_ava4.setVisibility(View.GONE);
+							        viewHolderChat.image_ava4.setVisibility(View.INVISIBLE);
 				            	}
 				            	else if(chat_users.size() == 2){
 				            		viewHolderChat.image_ava1.setVisibility(View.VISIBLE);
@@ -178,22 +230,22 @@ public class ConversationsAdapter extends ArrayAdapter<Message> {
 							        loader.download(chat_users.get(0).photo_rec, viewHolderChat.image_ava1);
 							        viewHolderChat.image_ava2.setTag(chat_users.get(1).photo_rec);
 							        loader.download(chat_users.get(1).photo_rec, viewHolderChat.image_ava2);
-							        viewHolderChat.image_ava3.setVisibility(View.GONE);
-							        viewHolderChat.image_ava4.setVisibility(View.GONE);
+							        viewHolderChat.image_ava3.setVisibility(View.INVISIBLE);
+							        viewHolderChat.image_ava4.setVisibility(View.INVISIBLE);
 				            	}
 				            	else if(chat_users.size() == 1){
 				            		viewHolderChat.image_ava1.setVisibility(View.VISIBLE);
 					                viewHolderChat.image_ava1.setTag(chat_users.get(0).photo_rec);
 							        loader.download(chat_users.get(0).photo_rec, viewHolderChat.image_ava1);
-							        viewHolderChat.image_ava2.setVisibility(View.GONE);
-							        viewHolderChat.image_ava3.setVisibility(View.GONE);
-							        viewHolderChat.image_ava4.setVisibility(View.GONE);
+							        viewHolderChat.image_ava2.setVisibility(View.INVISIBLE);
+							        viewHolderChat.image_ava3.setVisibility(View.INVISIBLE);
+							        viewHolderChat.image_ava4.setVisibility(View.INVISIBLE);
 				            	}
 				            	else{
-				            		viewHolderChat.image_ava1.setVisibility(View.GONE);
-							        viewHolderChat.image_ava2.setVisibility(View.GONE);
-							        viewHolderChat.image_ava3.setVisibility(View.GONE);
-							        viewHolderChat.image_ava4.setVisibility(View.GONE);
+				            		viewHolderChat.image_ava1.setVisibility(View.INVISIBLE);
+							        viewHolderChat.image_ava2.setVisibility(View.INVISIBLE);
+							        viewHolderChat.image_ava3.setVisibility(View.INVISIBLE);
+							        viewHolderChat.image_ava4.setVisibility(View.INVISIBLE);
 				            	}
 				            }
 				       }.execute();

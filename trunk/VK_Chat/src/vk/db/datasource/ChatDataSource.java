@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import vk.api.User;
 import vk.db.helpers.ChatSQLiteHelper;
+import vk.db.helpers.ConversationsSQLiteHelper;
 import vk.db.helpers.FriendsSQLiteHelper;
 import android.content.ContentValues;
 import android.content.Context;
@@ -27,7 +28,7 @@ public class ChatDataSource {
 	};
 	
 	public ChatDataSource(Context context) {
-		dbHelper = new ChatSQLiteHelper(context);
+		dbHelper = ChatSQLiteHelper.getInstance(context);
 	}
 	
 	public void open() throws SQLException {
