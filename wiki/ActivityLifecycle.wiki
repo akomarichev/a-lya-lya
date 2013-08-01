@@ -24,6 +24,10 @@ public void onPause() {
 }
 }}}
 
+*onResume()* - resume activity from the Passed state.
+
+Be aware that the system calls this method every time your activity comes into the foreground, including when it's created for the first time.
+
 {{{
 @Override
 public void onResume() {
