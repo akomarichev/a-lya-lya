@@ -39,3 +39,12 @@ public void onResume() {
     }
 }
 }}}
+
+*onStop()* - there are a few of key scenarios in which your activity is stopped and restarted:
+ * The user opens the Recent Apps window and switches from your app to another app. The activity in your app that's currently in the foreground is stopped. If the user returns to your app from the Home screen launcher icon or the Recent Apps window, the activity restarts.
+ * The user performs an action in your app that starts a new activity. The current activity is stopped when the second activity is created. If the user then presses the Back button, the first activity is restarted.
+ * The user receives a phone call while using your app on his or her phone.
+
+[http://developer.android.com/images/training/basics/basic-lifecycle-stopped.png]
+
+So it's important you use *onStop()* to release resources that might _leak memory_.
